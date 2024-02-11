@@ -1,8 +1,8 @@
 {
-  "name": "cdk-gitlab-runner",
+  "name": "@yanu23/cdk-gitlab-runner",
   "repository": {
     "type": "git",
-    "url": "https://github.com/user/cdk-gitlab-runner.git"
+    "url": "https://github.com/yanu23/cdk-gitlab-runner"
   },
   "scripts": {
     "build": "npx projen build",
@@ -29,16 +29,16 @@
     "projen": "npx projen"
   },
   "author": {
-    "name": "user",
-    "email": "user@domain.com",
-    "organization": false
+    "name": "Yannick Tresch",
+    "email": "yannick.tresch@dmoove.com",
+    "organization": true
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^18",
     "@typescript-eslint/eslint-plugin": "^6",
     "@typescript-eslint/parser": "^6",
-    "aws-cdk-lib": "2.1.0",
+    "aws-cdk-lib": "2.126.0",
     "constructs": "10.0.5",
     "eslint": "^8",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -57,9 +57,15 @@
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.1.0",
+    "aws-cdk-lib": "^2.126.0",
     "constructs": "^10.0.5"
   },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5"
+  },
+  "bundledDependencies": [
+    "@iarna/toml"
+  ],
   "keywords": [
     "cdk"
   ],

@@ -1,17 +1,16 @@
 import { awscdk } from 'projen';
 const project = new awscdk.AwsCdkConstructLibrary({
-  author: 'user',
-  authorAddress: 'user@domain.com',
-  cdkVersion: '2.1.0',
+  author: 'DMoove Solutions GmbH',
+  authorAddress: 'yannick.tresch@dmoove.com',
+  authorName: 'Yannick Tresch',
+  authorOrganization: true,
+  cdkVersion: '2.126.0',
   defaultReleaseBranch: 'main',
   jsiiVersion: '~5.0.0',
-  name: 'cdk-gitlab-runner',
+  name: '@yanu23/cdk-gitlab-runner',
   projenrcTs: true,
-  repositoryUrl: 'https://github.com/user/cdk-gitlab-runner.git',
-
-  // deps: [],                /* Runtime dependencies of this module. */
-  // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
-  // devDeps: [],             /* Build dependencies for this module. */
-  // packageName: undefined,  /* The "name" in package.json. */
+  repositoryUrl: 'https://github.com/yanu23/cdk-gitlab-runner',
+  bundledDeps: ['@iarna/toml'],
 });
+project.addGitIgnore('samples');
 project.synth();
