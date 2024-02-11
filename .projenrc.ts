@@ -13,10 +13,17 @@ const project = new awscdk.AwsCdkConstructLibrary({
   bundledDeps: ['@iarna/toml'],
   keywords: ['cdk', 'gitlab', 'runner', 'aws', 'cdk-constructs'],
   releaseToNpm: false,
+  autoApproveUpgrades: true,
   autoApproveOptions: {
-    secret: 'GITHUB_TOKEN',
-    allowedUsernames: ['github-actions', 'github-actions[bot]', 'yanu23'],
+    allowedUsernames: [
+      'github-actions',
+      'github-actions[bot]',
+      'dependabot',
+      'dependabot[bot]',
+      'yanu23',
+    ],
   },
+  dependabot: true,
 });
 project.addGitIgnore('samples');
 project.synth();
