@@ -19,7 +19,7 @@ export class DockerExecutorAutoscaling extends Construct implements IExecutor {
   constructor(
     scope: Construct,
     id: string,
-    props: DockerExecutorAutoscalingProps,
+    props: DockerExecutorAutoscalingProps
   ) {
     super(scope, id);
     this.executor = new AutoScalingGroup(this, 'ASG', {
@@ -42,7 +42,8 @@ export class DockerExecutorAutoscaling extends Construct implements IExecutor {
           },
         },
       ],
-      vpc: props.vpc,
+      vpc: props.vpcConfig.vpc,
+      vpcSubnets: props.vpcConfig.vpcSubnets,
       updatePolicy: UpdatePolicy.rollingUpdate({
         minInstancesInService: 1,
       }),
@@ -54,7 +55,7 @@ export class DockerExecutorAutoscaling extends Construct implements IExecutor {
         tags: props.tags,
         config: props.config,
         tokenSecret: props.tokenSecret,
-      }),
+      })
     );
 
     GlCfnInit.addAwsCfnBootstrap(this.executor);

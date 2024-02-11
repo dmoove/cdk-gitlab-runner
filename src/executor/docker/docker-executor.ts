@@ -1,12 +1,17 @@
 import { Stack } from 'aws-cdk-lib';
-import { IMachineImage, IVpc, InstanceType } from 'aws-cdk-lib/aws-ec2';
+import {
+  IMachineImage,
+  IVpc,
+  InstanceType,
+  SubnetSelection,
+} from 'aws-cdk-lib/aws-ec2';
 import { IRole, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { DockerExecutorAutoscaling } from './autoscaling';
 import { DockerExecutorType } from './enums';
 import { DockerExecutorInstance } from './single-instance';
 import { ExecutorProps, IExecutor } from '../executor';
+import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export interface BaseDockerExecutorProps extends ExecutorProps {
   /**
@@ -27,12 +32,17 @@ export interface BaseDockerExecutorProps extends ExecutorProps {
   /**
    * The VPC where the runner should run.
    */
-  readonly vpc: IVpc;
+  readonly vpcConfig: vpcConfig;
 
   /**
    * The GitLab authentification token secret
    */
   readonly tokenSecret: ISecret;
+}
+
+export interface vpcConfig {
+  readonly vpc: IVpc;
+  readonly vpcSubnets?: SubnetSelection;
 }
 
 export interface DockerExecutorProps extends BaseDockerExecutorProps {
@@ -63,7 +73,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
       case DockerExecutorType.AUTOSCALING:
         if (!props.autoscalingConfig) {
           throw new Error(
-            'Autoscaling config is required for autoscaling executor',
+            'Autoscaling config is required for autoscaling executor'
           );
         }
         this.executor = new DockerExecutorAutoscaling(this, 'ASG', {
@@ -72,7 +82,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
           instanceType: props.instanceType,
           machineImage: props.machineImage,
           tags: props.tags,
-          vpc: props.vpc,
+          vpcConfig: props.vpcConfig,
           tokenSecret: props.tokenSecret,
         });
         break;
@@ -82,7 +92,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
           instanceType: props.instanceType,
           machineImage: props.machineImage,
           tags: props.tags,
-          vpc: props.vpc,
+          vpcConfig: props.vpcConfig,
           tokenSecret: props.tokenSecret,
         });
         break;
@@ -101,7 +111,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
               Stack.of(this).stackName,
           },
         },
-      }),
+      })
     );
   }
 }
