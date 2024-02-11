@@ -43,11 +43,29 @@ export interface RunnerConfig {
 }
 
 export interface DockerExecutorAttributes {
+  /**
+   * The instance type of the GitLab Runner.
+   */
   readonly instanceType: InstanceType;
+  /**
+   * The machine image of the GitLab Runner.
+   */
   readonly machineImage: IMachineImage;
+  /**
+   * The VPC configuration of the GitLab Runner.
+   */
   readonly vpcConfig: VpcConfig;
+  /**
+   * The autoscaling configuration of the GitLab Runner.
+   */
   readonly autoscalingConfig?: AutoScalingConfig;
+  /**
+   * The tags of the GitLab Runner.
+   */
   readonly tags?: string[];
+  /**
+   * The configuration of the Docker executor.
+   */
   readonly configProp?: DockerExecutorConfigProps;
 }
 
@@ -70,6 +88,12 @@ export interface DockerExecutorConfigProps {
    * @default - []
    */
   readonly volumes?: string[];
+  /**
+   * Whether to disable IPv4 for the GitLab Runner.
+   *
+   * @default - false
+   */
+  readonly disableIpv4?: boolean;
 }
 
 export interface IGitLabRunner {
@@ -89,6 +113,11 @@ export interface IGitLabRunner {
   readonly tokenSecret: ISecret;
 
   /**
+   * The URL of the gitlab instance
+   */
+  readonly gitlabUrl: string;
+
+  /**
    * Adds a Docker executor to the GitLab Runner configuration.
    *
    * @default - no docker executor added to the configuration.
@@ -104,7 +133,7 @@ export interface IGitLabRunner {
    */
   addDockerExecutor(
     type: DockerExecutorType,
-    props: DockerExecutorAttributes
+    props: DockerExecutorAttributes,
   ): void;
 
   /**
@@ -119,21 +148,28 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
   readonly encryptionKey: Key;
   readonly glConfig: GitLabConfig;
   readonly tokenSecret: ISecret;
+  readonly gitlabUrl: string;
 
   constructor(scope: Construct, id: string, props: GitLabRunnerProps) {
     super(scope, id);
 
     this.tokenSecret = props.runnerConfig.token;
+    this.gitlabUrl = props.runnerConfig.url ?? 'https://gitlab.com/';
 
     this.glConfig = new GitLabConfig({
       concurrent: props.runnerConfig.concurrent ?? 2,
-      gitlabUrl: props.runnerConfig.url ?? 'https://gitlab.com/',
+      gitlabUrl: this.gitlabUrl,
     });
 
     this.encryptionKey =
       props.encryptionKey ?? new Key(this, 'GitLabRunnerKey');
   }
 
+  /**
+   * Adds a Docker executor to the GitLab Runner configuration.
+   * @param type
+   * @param props
+   */
   addDockerExecutor(type: DockerExecutorType, props: DockerExecutorAttributes) {
     this.glConfig.addDockerExecutor(props.configProp);
 
@@ -146,9 +182,17 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
       autoscalingConfig: props.autoscalingConfig,
       tags: props.tags,
       tokenSecret: this.tokenSecret,
+      gitlabUrl: this.gitlabUrl,
     });
   }
 
+  /**
+   * Adds a cache to the GitLab Runner configuration.
+   * @param bucketPrefix - the prefix for the S3 bucket used for caching.
+   * @param cacheDuration - the duration for which the cache is valid.
+   * @example
+   * runner.addCache('my-cache', Duration.days(7));
+   */
   addCache(bucketPrefix?: string, cacheDuration?: Duration) {
     const cacheBucket = new GitLabCacheBucket(this, 'GitLabCacheBucket', {
       encryptionKey: this.encryptionKey,

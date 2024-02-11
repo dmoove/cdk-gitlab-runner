@@ -1,7 +1,9 @@
 import { Stack } from 'aws-cdk-lib';
+import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import {
   IMachineImage,
   IVpc,
+  Instance,
   InstanceType,
   SubnetSelection,
 } from 'aws-cdk-lib/aws-ec2';
@@ -11,7 +13,7 @@ import { Construct } from 'constructs';
 import { DockerExecutorAutoscaling } from './autoscaling';
 import { DockerExecutorType } from './enums';
 import { DockerExecutorInstance } from './single-instance';
-import { ExecutorProps, IExecutor } from '../executor';
+import { ExecutorProps } from '../executor';
 
 export interface BaseDockerExecutorProps extends ExecutorProps {
   /**
@@ -38,6 +40,8 @@ export interface BaseDockerExecutorProps extends ExecutorProps {
    * The GitLab authentification token secret
    */
   readonly tokenSecret: ISecret;
+
+  readonly gitlabUrl: string;
 }
 
 export interface VpcConfig {
@@ -59,12 +63,12 @@ export interface AutoScalingConfig {
 }
 
 export interface IDockerExecutor {
-  readonly executor: IExecutor;
+  readonly executor: Instance | AutoScalingGroup;
   addTaggingPermission(grantee: IRole): void;
 }
 
 export class DockerExecutor extends Construct implements IDockerExecutor {
-  readonly executor: IExecutor;
+  readonly executor: Instance | AutoScalingGroup;
 
   constructor(scope: Construct, id: string, props: DockerExecutorProps) {
     super(scope, id);
@@ -84,6 +88,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
           tags: props.tags,
           vpcConfig: props.vpcConfig,
           tokenSecret: props.tokenSecret,
+          gitlabUrl: props.gitlabUrl,
         });
         break;
       case DockerExecutorType.SINGLE_INSTANCE:
@@ -94,10 +99,11 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
           tags: props.tags,
           vpcConfig: props.vpcConfig,
           tokenSecret: props.tokenSecret,
+          gitlabUrl: props.gitlabUrl,
         });
         break;
     }
-    this.addTaggingPermission(this.executor?.executor.role);
+    this.addTaggingPermission(this.executor.role);
   }
 
   public addTaggingPermission(grantee: IRole) {

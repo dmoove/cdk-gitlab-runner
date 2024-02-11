@@ -7,9 +7,6 @@ import { GlConfig } from '../types/runner-config';
 
 /**
  * Properties for the GlConfigGenerator class.
- *
- * @export
- * @interface GlConfigGeneratorProps
  */
 export interface GlConfigGeneratorProps {
   /**
@@ -61,13 +58,39 @@ export interface ConfigDockerExecutor {
   readonly disableCache?: boolean;
 }
 
+export interface IGitLabConfig {
+  /**
+   * Adds an executor to the configuration.
+   *
+   * @param props The properties for the executor.
+   */
+  addDockerExecutor(props?: ConfigDockerExecutor): void;
+
+  /**
+   * Adds an environment variable to the configuration.
+   *
+   * @param key
+   * @param value
+   */
+  addEnvironment(key: string, value: string): void;
+
+  /**
+   * Adds a cache to the configuration.
+   * @param scope
+   * @param bucket
+   */
+  addCache(scope: Construct, bucket: GitLabCacheBucket): void;
+
+  /**
+   * Generates the GitLab configuration as a TOML string.
+   */
+  generateToml(): string;
+}
+
 /**
  * Generates a gitlab config toml file
- *
- * @export
- * @class GlConfigGenerator
  */
-export class GitLabConfig {
+export class GitLabConfig implements IGitLabConfig {
   private readonly config: GlConfig;
   private readonly url: string;
 
@@ -79,7 +102,7 @@ export class GitLabConfig {
     };
   }
 
-  addDockerExecutor(props?: ConfigDockerExecutor) {
+  public addDockerExecutor(props?: ConfigDockerExecutor) {
     this.config.runners.push({
       url: this.url,
       token: '{TOKEN}',
@@ -100,7 +123,7 @@ export class GitLabConfig {
     this.addEnvironment('DOCKER_AUTH_CONFIG', '{ "credsStore": "ecr-login" }');
   }
 
-  addEnvironment(key: string, value: string) {
+  public addEnvironment(key: string, value: string) {
     if (this.config.runners.length === 0) {
       throw new Error('No runners have been added to the configuration.');
     }
@@ -114,7 +137,7 @@ export class GitLabConfig {
     this.config.runners[0].environment.push(envString);
   }
 
-  addCache(scope: Construct, bucket: GitLabCacheBucket) {
+  public addCache(scope: Construct, bucket: GitLabCacheBucket) {
     if (this.config.runners.length === 0) {
       throw new Error('No runners have been added to the configuration.');
     }
@@ -129,7 +152,7 @@ export class GitLabConfig {
     };
   }
 
-  generateToml() {
+  public generateToml() {
     return toml.stringify(this.config);
   }
 }

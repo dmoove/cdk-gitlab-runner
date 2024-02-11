@@ -28,7 +28,16 @@ export interface GitLabCacheBucketProps {
 }
 
 export interface ICacheBucket {
+  /**
+   * The bucket that was created for the cache
+   *
+   * @type {Bucket}
+   */
   readonly bucket: Bucket;
+  /**
+   * Grant read and write access to the bucket to the grantee.
+   * @param grantee
+   */
   grantReadWrite(grantee: IPrincipal): void;
 }
 
