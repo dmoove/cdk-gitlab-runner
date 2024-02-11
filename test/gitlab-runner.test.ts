@@ -63,7 +63,9 @@ describe('GitLabRunner', () => {
     runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
       machineImage: MachineImage.latestAmazonLinux2023(),
       instanceType: InstanceType.of(InstanceClass.T3A, InstanceSize.MEDIUM),
-      vpc,
+      vpcConfig: {
+        vpc,
+      },
     });
     runner.addCache();
 
@@ -82,7 +84,9 @@ describe('GitLabRunner', () => {
     runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
       machineImage: MachineImage.latestAmazonLinux2023(),
       instanceType: InstanceType.of(InstanceClass.T3A, InstanceSize.MEDIUM),
-      vpc,
+      vpcConfig: {
+        vpc,
+      },
     });
     template = Template.fromStack(stack);
 
