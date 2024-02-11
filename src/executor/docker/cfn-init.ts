@@ -21,6 +21,13 @@ export interface GlCfnInitProps {
 }
 
 export class GlCfnInit extends Construct {
+  /**
+   * Creates a CloudFormation Init to register a gitlab runner
+   *
+   * @param that
+   * @param props
+   * @returns a cloudformation init
+   */
   public static createInit(
     that: Construct,
     props: GlCfnInitProps,
