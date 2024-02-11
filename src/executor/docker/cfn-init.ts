@@ -10,9 +10,9 @@ import {
   InitService,
   Instance,
 } from 'aws-cdk-lib/aws-ec2';
+import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { GitLabConfig } from '../../config-generator/config-generator';
-import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export interface GlCfnInitProps {
   readonly config: GitLabConfig;
@@ -23,7 +23,7 @@ export interface GlCfnInitProps {
 export class GlCfnInit extends Construct {
   public static createInit(
     that: Construct,
-    props: GlCfnInitProps
+    props: GlCfnInitProps,
   ): CloudFormationInit {
     const tags = [
       ...(props.tags ?? []),
@@ -55,7 +55,7 @@ export class GlCfnInit extends Construct {
           InitFile.fromString(
             '/root/.aws/config',
             `[default]
-region = ${Stack.of(that).region}`
+region = ${Stack.of(that).region}`,
           ),
         ]),
 
@@ -64,7 +64,7 @@ region = ${Stack.of(that).region}`
          */
         docker: new InitConfig([
           InitCommand.shellCommand(
-            'sudo amazon-linux-extras install docker -y'
+            'sudo amazon-linux-extras install docker -y',
           ),
           InitCommand.shellCommand('sudo service docker start'),
           InitCommand.shellCommand('sudo usermod -a -G docker ec2-user'), // TODO: new user?
@@ -75,7 +75,7 @@ region = ${Stack.of(that).region}`
          */
         gitlabrunner: new InitConfig([
           InitCommand.shellCommand(
-            'curl https://gitlab-runner-downloads.s3.amazonaws.com/latest/rpm/gitlab-runner_amd64.rpm --output gitlab-runner_amd64.rpm'
+            'curl https://gitlab-runner-downloads.s3.amazonaws.com/latest/rpm/gitlab-runner_amd64.rpm --output gitlab-runner_amd64.rpm',
           ),
           InitCommand.shellCommand('sudo rpm -i gitlab-runner_amd64.rpm'),
         ]),
@@ -86,14 +86,14 @@ region = ${Stack.of(that).region}`
         gitlabconfig: new InitConfig([
           InitFile.fromString(
             '/etc/gitlab-runner/config.toml',
-            props.config.generateToml()
+            props.config.generateToml(),
           ),
           InitFile.fromAsset(
             '/etc/gitlab-runner/start.sh',
             join(__dirname, '../../', 'scripts/', 'start-runner.sh'),
             {
               mode: '0777',
-            }
+            },
           ),
           InitCommand.shellCommand(`./etc/gitlab-runner/start.sh ${tags}`, {
             testCmd: 'gitlab-runner status',

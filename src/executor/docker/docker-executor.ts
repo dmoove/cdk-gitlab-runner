@@ -1,12 +1,12 @@
 import { Stack } from 'aws-cdk-lib';
 import { IMachineImage, IVpc, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { IRole, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { DockerExecutorAutoscaling } from './autoscaling';
 import { DockerExecutorType } from './enums';
 import { DockerExecutorInstance } from './single-instance';
 import { ExecutorProps, IExecutor } from '../executor';
-import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export interface BaseDockerExecutorProps extends ExecutorProps {
   /**
@@ -63,7 +63,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
       case DockerExecutorType.AUTOSCALING:
         if (!props.autoscalingConfig) {
           throw new Error(
-            'Autoscaling config is required for autoscaling executor'
+            'Autoscaling config is required for autoscaling executor',
           );
         }
         this.executor = new DockerExecutorAutoscaling(this, 'ASG', {
@@ -101,7 +101,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
               Stack.of(this).stackName,
           },
         },
-      })
+      }),
     );
   }
 }

@@ -8,9 +8,9 @@ import {
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 import { Key } from 'aws-cdk-lib/aws-kms';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { DockerExecutorType } from '../src/executor/docker/enums';
 import { GitLabRunner } from '../src/gitlab-runner/gitlab-runner';
-import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 
 describe('GitLabRunner', () => {
   let app: App;

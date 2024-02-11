@@ -1,12 +1,12 @@
 import { Duration } from 'aws-cdk-lib';
 import { IMachineImage, IVpc, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { Key } from 'aws-cdk-lib/aws-kms';
+import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { GitLabCacheBucket } from '../cache/cache-bucket';
 import { GitLabConfig } from '../config-generator/config-generator';
 import { AutoScalingConfig, DockerExecutor } from '../executor';
 import { DockerExecutorType } from '../executor/docker/enums';
-import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export interface GitLabRunnerProps {
   /**
