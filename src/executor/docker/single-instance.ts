@@ -1,9 +1,9 @@
+import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Instance } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { GlCfnInit } from './cfn-init';
 import { BaseDockerExecutorProps } from './docker-executor';
 import { IExecutor } from '../executor';
-import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 
 export interface DockerExecutorInstanceProps extends BaseDockerExecutorProps {}
 
@@ -13,7 +13,7 @@ export class DockerExecutorInstance extends Construct implements IExecutor {
   constructor(
     scope: Construct,
     id: string,
-    props: DockerExecutorInstanceProps
+    props: DockerExecutorInstanceProps,
   ) {
     super(scope, id);
 

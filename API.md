@@ -867,7 +867,7 @@ const baseDockerExecutorProps: BaseDockerExecutorProps = { ... }
 | <code><a href="#@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
-| <code><a href="#@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.vpc">vpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC where the runner should run. |
+| <code><a href="#@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
 
 ---
@@ -928,13 +928,13 @@ The GitLab authentification token secret.
 
 ---
 
-##### `vpc`<sup>Required</sup> <a name="vpc" id="@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.vpc"></a>
+##### `vpcConfig`<sup>Required</sup> <a name="vpcConfig" id="@yanu23/cdk-gitlab-runner.BaseDockerExecutorProps.property.vpcConfig"></a>
 
 ```typescript
-public readonly vpc: IVpc;
+public readonly vpcConfig: VpcConfig;
 ```
 
-- *Type:* aws-cdk-lib.aws_ec2.IVpc
+- *Type:* <a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a>
 
 The VPC where the runner should run.
 
@@ -1041,7 +1041,7 @@ const dockerExecutorAttributes: DockerExecutorAttributes = { ... }
 | --- | --- | --- |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | *No description.* |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | *No description.* |
-| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.vpc">vpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.vpcConfig">vpcConfig</a></code> | <code>aws-cdk-lib.aws_stepfunctions_tasks.VpcConfig</code> | *No description.* |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | *No description.* |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.configProp">configProp</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorConfigProps">DockerExecutorConfigProps</a></code> | *No description.* |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.tags">tags</a></code> | <code>string[]</code> | *No description.* |
@@ -1068,13 +1068,13 @@ public readonly machineImage: IMachineImage;
 
 ---
 
-##### `vpc`<sup>Required</sup> <a name="vpc" id="@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.vpc"></a>
+##### `vpcConfig`<sup>Required</sup> <a name="vpcConfig" id="@yanu23/cdk-gitlab-runner.DockerExecutorAttributes.property.vpcConfig"></a>
 
 ```typescript
-public readonly vpc: IVpc;
+public readonly vpcConfig: VpcConfig;
 ```
 
-- *Type:* aws-cdk-lib.aws_ec2.IVpc
+- *Type:* aws-cdk-lib.aws_stepfunctions_tasks.VpcConfig
 
 ---
 
@@ -1127,7 +1127,7 @@ const dockerExecutorAutoscalingProps: DockerExecutorAutoscalingProps = { ... }
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
-| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.vpc">vpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC where the runner should run. |
+| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
 
 ---
@@ -1188,13 +1188,13 @@ The GitLab authentification token secret.
 
 ---
 
-##### `vpc`<sup>Required</sup> <a name="vpc" id="@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.vpc"></a>
+##### `vpcConfig`<sup>Required</sup> <a name="vpcConfig" id="@yanu23/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.vpcConfig"></a>
 
 ```typescript
-public readonly vpc: IVpc;
+public readonly vpcConfig: VpcConfig;
 ```
 
-- *Type:* aws-cdk-lib.aws_ec2.IVpc
+- *Type:* <a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a>
 
 The VPC where the runner should run.
 
@@ -1290,7 +1290,7 @@ const dockerExecutorInstanceProps: DockerExecutorInstanceProps = { ... }
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
-| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.vpc">vpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC where the runner should run. |
+| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
 
 ---
@@ -1351,13 +1351,13 @@ The GitLab authentification token secret.
 
 ---
 
-##### `vpc`<sup>Required</sup> <a name="vpc" id="@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.vpc"></a>
+##### `vpcConfig`<sup>Required</sup> <a name="vpcConfig" id="@yanu23/cdk-gitlab-runner.DockerExecutorInstanceProps.property.vpcConfig"></a>
 
 ```typescript
-public readonly vpc: IVpc;
+public readonly vpcConfig: VpcConfig;
 ```
 
-- *Type:* aws-cdk-lib.aws_ec2.IVpc
+- *Type:* <a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a>
 
 The VPC where the runner should run.
 
@@ -1394,7 +1394,7 @@ const dockerExecutorProps: DockerExecutorProps = { ... }
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
-| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.vpc">vpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC where the runner should run. |
+| <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
 | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.dockerExecutorType">dockerExecutorType</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.DockerExecutorType">DockerExecutorType</a></code> | Choose the docker executor type. |
 
@@ -1456,13 +1456,13 @@ The GitLab authentification token secret.
 
 ---
 
-##### `vpc`<sup>Required</sup> <a name="vpc" id="@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.vpc"></a>
+##### `vpcConfig`<sup>Required</sup> <a name="vpcConfig" id="@yanu23/cdk-gitlab-runner.DockerExecutorProps.property.vpcConfig"></a>
 
 ```typescript
-public readonly vpc: IVpc;
+public readonly vpcConfig: VpcConfig;
 ```
 
-- *Type:* aws-cdk-lib.aws_ec2.IVpc
+- *Type:* <a href="#@yanu23/cdk-gitlab-runner.VpcConfig">VpcConfig</a>
 
 The VPC where the runner should run.
 
@@ -1784,6 +1784,45 @@ public readonly url: string;
 - *Default:* https://gitlab.com/
 
 The GitLab URL.
+
+---
+
+### VpcConfig <a name="VpcConfig" id="@yanu23/cdk-gitlab-runner.VpcConfig"></a>
+
+#### Initializer <a name="Initializer" id="@yanu23/cdk-gitlab-runner.VpcConfig.Initializer"></a>
+
+```typescript
+import { VpcConfig } from '@yanu23/cdk-gitlab-runner'
+
+const vpcConfig: VpcConfig = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@yanu23/cdk-gitlab-runner.VpcConfig.property.vpc">vpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.VpcConfig.property.vpcSubnets">vpcSubnets</a></code> | <code>aws-cdk-lib.aws_ec2.SubnetSelection</code> | *No description.* |
+
+---
+
+##### `vpc`<sup>Required</sup> <a name="vpc" id="@yanu23/cdk-gitlab-runner.VpcConfig.property.vpc"></a>
+
+```typescript
+public readonly vpc: IVpc;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.IVpc
+
+---
+
+##### `vpcSubnets`<sup>Optional</sup> <a name="vpcSubnets" id="@yanu23/cdk-gitlab-runner.VpcConfig.property.vpcSubnets"></a>
+
+```typescript
+public readonly vpcSubnets: SubnetSelection;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.SubnetSelection
 
 ---
 

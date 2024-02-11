@@ -6,12 +6,12 @@ import {
   SubnetSelection,
 } from 'aws-cdk-lib/aws-ec2';
 import { IRole, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { DockerExecutorAutoscaling } from './autoscaling';
 import { DockerExecutorType } from './enums';
 import { DockerExecutorInstance } from './single-instance';
 import { ExecutorProps, IExecutor } from '../executor';
-import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export interface BaseDockerExecutorProps extends ExecutorProps {
   /**
@@ -32,7 +32,7 @@ export interface BaseDockerExecutorProps extends ExecutorProps {
   /**
    * The VPC where the runner should run.
    */
-  readonly vpcConfig: vpcConfig;
+  readonly vpcConfig: VpcConfig;
 
   /**
    * The GitLab authentification token secret
@@ -40,7 +40,7 @@ export interface BaseDockerExecutorProps extends ExecutorProps {
   readonly tokenSecret: ISecret;
 }
 
-export interface vpcConfig {
+export interface VpcConfig {
   readonly vpc: IVpc;
   readonly vpcSubnets?: SubnetSelection;
 }
@@ -73,7 +73,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
       case DockerExecutorType.AUTOSCALING:
         if (!props.autoscalingConfig) {
           throw new Error(
-            'Autoscaling config is required for autoscaling executor'
+            'Autoscaling config is required for autoscaling executor',
           );
         }
         this.executor = new DockerExecutorAutoscaling(this, 'ASG', {
@@ -111,7 +111,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
               Stack.of(this).stackName,
           },
         },
-      })
+      }),
     );
   }
 }

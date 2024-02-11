@@ -1,7 +1,8 @@
 import { Duration } from 'aws-cdk-lib';
-import { IMachineImage, IVpc, InstanceType } from 'aws-cdk-lib/aws-ec2';
+import { IMachineImage, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
+import { VpcConfig } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
 import { GitLabCacheBucket } from '../cache/cache-bucket';
 import { GitLabConfig } from '../config-generator/config-generator';
@@ -44,7 +45,7 @@ export interface RunnerConfig {
 export interface DockerExecutorAttributes {
   readonly instanceType: InstanceType;
   readonly machineImage: IMachineImage;
-  readonly vpc: IVpc;
+  readonly vpcConfig: VpcConfig;
   readonly autoscalingConfig?: AutoScalingConfig;
   readonly tags?: string[];
   readonly configProp?: DockerExecutorConfigProps;
@@ -141,7 +142,7 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
       dockerExecutorType: type,
       instanceType: props.instanceType,
       machineImage: props.machineImage,
-      vpc: props.vpc,
+      vpcConfig: props.vpcConfig,
       autoscalingConfig: props.autoscalingConfig,
       tags: props.tags,
       tokenSecret: this.tokenSecret,
