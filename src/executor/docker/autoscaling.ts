@@ -4,11 +4,11 @@ import {
   Signals,
   UpdatePolicy,
 } from 'aws-cdk-lib/aws-autoscaling';
+import { Instance } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { GlCfnInit } from './cfn-init';
 import { BaseDockerExecutorProps } from './docker-executor';
 import { IExecutor } from '../executor';
-import { Instance } from 'aws-cdk-lib/aws-ec2';
 
 export interface DockerExecutorAutoscalingProps
   extends BaseDockerExecutorProps {}
@@ -19,7 +19,7 @@ export class DockerExecutorAutoscaling extends Construct implements IExecutor {
   constructor(
     scope: Construct,
     id: string,
-    props: DockerExecutorAutoscalingProps
+    props: DockerExecutorAutoscalingProps,
   ) {
     super(scope, id);
     this.executor = new AutoScalingGroup(this, 'ASG', {
@@ -54,7 +54,7 @@ export class DockerExecutorAutoscaling extends Construct implements IExecutor {
         tags: props.tags,
         config: props.config,
         tokenSecret: props.tokenSecret,
-      })
+      }),
     );
 
     GlCfnInit.addAwsCfnBootstrap(this.executor);

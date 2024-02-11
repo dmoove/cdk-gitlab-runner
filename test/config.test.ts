@@ -43,7 +43,7 @@ describe('GitLabConfig Generator', () => {
     expect(tomlConfig).toContain('privileged = true');
     expect(tomlConfig).toContain('disable_cache = false');
     expect(tomlConfig).toContain(
-      '"DOCKER_AUTH_CONFIG={ \\"credsStore\\": \\"ecr-login\\" }"'
+      '"DOCKER_AUTH_CONFIG={ \\"credsStore\\": \\"ecr-login\\" }"',
     );
   });
 
@@ -58,7 +58,7 @@ describe('GitLabConfig Generator', () => {
     const tomlConfig = config.generateToml();
     expect(tomlConfig).toContain('Type = "s3"');
     expect(tomlConfig).toContain(
-      `BucketName = "${cacheBucket.bucket.bucketName}"`
+      `BucketName = "${cacheBucket.bucket.bucketName}"`,
     );
     expect(tomlConfig).toContain('Shared = true');
   });
