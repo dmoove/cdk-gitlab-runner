@@ -15,7 +15,7 @@ export class DrainFunction extends Function {
   constructor(scope: Construct, id: string, props: DrainFunctionProps) {
     super(scope, id, {
       code: Code.fromAsset(LAMBDA_ASSET_DIR),
-      handler: 'drain.handler',
+      handler: 'index.handler',
       runtime: Runtime.NODEJS_16_X,
       environment: {
         SECRET_ARN: props.secret.secretArn,
@@ -28,7 +28,7 @@ export class DrainFunction extends Function {
 
     this.addToRolePolicy(
       new PolicyStatement({
-        actions: ['ec2:DescribeInstances'],
+        actions: ['ec2:DescribeInstances', 'ec2:DescribeTags'],
         resources: ['*'],
       }),
     );

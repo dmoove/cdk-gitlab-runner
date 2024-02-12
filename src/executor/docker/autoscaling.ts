@@ -51,6 +51,7 @@ export class DockerExecutorAutoscaling extends AutoScalingGroup {
         tags: props.tags,
         config: props.config,
         tokenSecret: props.tokenSecret,
+        url: props.gitlabUrl,
       }),
     );
 

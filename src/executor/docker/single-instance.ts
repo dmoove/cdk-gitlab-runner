@@ -30,6 +30,7 @@ export class DockerExecutorInstance extends Instance {
         tags: props.tags,
         config: props.config,
         tokenSecret: props.tokenSecret,
+        url: props.gitlabUrl,
       }),
       vpcSubnets: props.vpcConfig.vpcSubnets,
     });
