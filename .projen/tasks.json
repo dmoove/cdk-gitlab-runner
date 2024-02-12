@@ -176,7 +176,7 @@
       "description": "Prepare the project for compilation",
       "steps": [
         {
-          "exec": "esbuild --bundle --external:aws-sdk --platform=node src/drain-runner/lambda/drain.function.ts --outfile=lambda/drain.function.ts"
+          "exec": "esbuild --bundle --external:aws-sdk --platform=node src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js"
         }
       ]
     },

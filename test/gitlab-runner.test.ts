@@ -58,6 +58,9 @@ describe('GitLabRunner', () => {
       runnerConfig: {
         token,
       },
+      cacheConfig: {
+        enabled: true,
+      },
     });
 
     runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
@@ -67,7 +70,6 @@ describe('GitLabRunner', () => {
         vpc,
       },
     });
-    runner.addCache();
 
     template = Template.fromStack(stack);
 

@@ -39,7 +39,7 @@ const commonOptions = '--bundle --external:aws-sdk --platform=node';
 const preCompileTask = project.tasks.tryFind('pre-compile');
 if (preCompileTask) {
   preCompileTask.exec(
-    `esbuild ${commonOptions} src/drain-runner/lambda/drain.function.ts --outfile=lambda/drain.function.ts`,
+    `esbuild ${commonOptions} src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js`,
   );
 }
 

@@ -1,4 +1,3 @@
-import { Handler } from 'aws-lambda';
 import { AutoScaling, EC2, SecretsManager } from 'aws-sdk';
 import { Runners } from 'gitlab';
 import { AutoScalingEvent, EditRunnerOptions, GitLabSecret, Job } from './type';
@@ -10,7 +9,7 @@ const asgClient = new AutoScaling();
 const secretArn = process.env.SECRET_ARN;
 const gitEndpoint = process.env.GIT_ENDPOINT;
 
-export const handler: Handler = async (event: AutoScalingEvent) => {
+export async function handler(event: AutoScalingEvent) {
   const instanceId = event.detail.EC2InstanceId;
 
   if (!secretArn || !gitEndpoint) {
@@ -69,7 +68,7 @@ export const handler: Handler = async (event: AutoScalingEvent) => {
     .catch((error) => {
       throw new Error(error);
     });
-};
+}
 
 async function getRunnerId(instanceId: string): Promise<number> {
   var params = {

@@ -104,6 +104,8 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
         break;
     }
     this.addTaggingPermission(this.executor.role);
+    props.tokenSecret.grantRead(this.executor.role);
+    props.tokenSecret.encryptionKey?.grantDecrypt(this.executor.role);
   }
 
   public addTaggingPermission(grantee: IRole) {

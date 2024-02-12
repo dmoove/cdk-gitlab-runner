@@ -21,6 +21,32 @@ export interface GitLabRunnerProps {
    * basic runner configuration
    */
   readonly runnerConfig: RunnerConfig;
+
+  /**
+   * basic cache configuration
+   */
+  readonly cacheConfig?: CacheConfig;
+}
+
+export interface CacheConfig {
+  /**
+   * Wheter a cache should be enabled
+   *
+   * @default - false
+   */
+  readonly enabled: boolean;
+  /**
+   * The prefix used for the bucket
+   *
+   * @default - {account}-{region}-gitlab-cache
+   */
+  readonly bucketPrefix?: string;
+  /**
+   * The duration for which the cache is valid.
+   *
+   * @default - 7
+   */
+  readonly cacheDuration?: Duration;
 }
 
 export interface RunnerConfig {
@@ -135,13 +161,6 @@ export interface IGitLabRunner {
     type: DockerExecutorType,
     props: DockerExecutorAttributes,
   ): void;
-
-  /**
-   * Adds a cache to the GitLab Runner configuration.
-   * @param bucketPrefix - the prefix for the S3 bucket used for caching.
-   * @param cacheDuration - the duration for which the cache is valid.
-   */
-  addCache(bucketPrefix?: string, cacheDuration?: Duration): void;
 }
 
 export class GitLabRunner extends Construct implements IGitLabRunner {
@@ -149,6 +168,7 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
   readonly glConfig: GitLabConfig;
   readonly tokenSecret: ISecret;
   readonly gitlabUrl: string;
+  private configurationActions: Array<(config: GitLabConfig) => void> = [];
 
   constructor(scope: Construct, id: string, props: GitLabRunnerProps) {
     super(scope, id);
@@ -163,6 +183,13 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
 
     this.encryptionKey =
       props.encryptionKey ?? new Key(this, 'GitLabRunnerKey');
+
+    if (props.cacheConfig) {
+      this.addCache(
+        props.cacheConfig.bucketPrefix,
+        props.cacheConfig.cacheDuration,
+      );
+    }
   }
 
   /**
@@ -171,7 +198,11 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
    * @param props
    */
   addDockerExecutor(type: DockerExecutorType, props: DockerExecutorAttributes) {
-    this.glConfig.addDockerExecutor(props.configProp);
+    this.configurationActions.push((config: GitLabConfig) =>
+      config.addDockerExecutor(props.configProp),
+    );
+
+    this.applyConfigurationChanges();
 
     new DockerExecutor(this, 'DockerExecutor', {
       config: this.glConfig,
@@ -193,13 +224,19 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
    * @example
    * runner.addCache('my-cache', Duration.days(7));
    */
-  addCache(bucketPrefix?: string, cacheDuration?: Duration) {
-    const cacheBucket = new GitLabCacheBucket(this, 'GitLabCacheBucket', {
-      encryptionKey: this.encryptionKey,
-      bucketNamePrefix: bucketPrefix,
-      cacheDuration: cacheDuration,
-    });
+  private addCache(bucketPrefix?: string, cacheDuration?: Duration) {
+    this.configurationActions.push((config: GitLabConfig) => {
+      const cacheBucket = new GitLabCacheBucket(this, 'GitLabCacheBucket', {
+        encryptionKey: this.encryptionKey,
+        bucketNamePrefix: bucketPrefix,
+        cacheDuration: cacheDuration,
+      });
 
-    this.glConfig.addCache(this, cacheBucket);
+      config.addCache(this, cacheBucket);
+    });
+  }
+
+  private applyConfigurationChanges() {
+    this.configurationActions.forEach((action) => action(this.glConfig));
   }
 }
