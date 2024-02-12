@@ -58,10 +58,18 @@
     "constructs": "^10.0.5"
   },
   "dependencies": {
-    "@iarna/toml": "^2.2.5"
+    "@iarna/toml": "2.2.5",
+    "@types/aws-lambda": "8.10.133",
+    "aws-sdk": "2.1555.0",
+    "esbuild": "0.20.0",
+    "gitlab": "14.2.2"
   },
   "bundledDependencies": [
-    "@iarna/toml"
+    "@iarna/toml",
+    "@types/aws-lambda",
+    "aws-sdk",
+    "esbuild",
+    "gitlab"
   ],
   "keywords": [
     "aws",

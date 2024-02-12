@@ -18,9 +18,17 @@ export interface GlCfnInitProps {
   readonly config: GitLabConfig;
   readonly tags?: string[];
   readonly tokenSecret: ISecret;
+  readonly url: string;
 }
 
 export class GlCfnInit extends Construct {
+  /**
+   * Creates a CloudFormation Init to register a gitlab runner
+   *
+   * @param that
+   * @param props
+   * @returns a cloudformation init
+   */
   public static createInit(
     that: Construct,
     props: GlCfnInitProps,
@@ -63,9 +71,7 @@ region = ${Stack.of(that).region}`,
          * Docker installation for the gitlab runner to be able to run containers
          */
         docker: new InitConfig([
-          InitCommand.shellCommand(
-            'sudo amazon-linux-extras install docker -y',
-          ),
+          InitPackage.yum('docker'),
           InitCommand.shellCommand('sudo service docker start'),
           InitCommand.shellCommand('sudo usermod -a -G docker ec2-user'), // TODO: new user?
         ]),
@@ -95,12 +101,17 @@ region = ${Stack.of(that).region}`,
               mode: '0777',
             },
           ),
-          InitCommand.shellCommand(`./etc/gitlab-runner/start.sh ${tags}`, {
-            testCmd: 'gitlab-runner status',
-            env: {
-              SECRET: props.tokenSecret.secretArn,
+          InitCommand.shellCommand(
+            `
+              export SECRET="${props.tokenSecret.secretArn}" && \
+              export GITLAB_URL="${props.url}" && \
+              echo $SECRET && \
+              echo $GITLAB_URL && \
+              ./etc/gitlab-runner/start.sh "${props.tokenSecret.secretArn}" "${props.url}" "${tags}"`,
+            {
+              testCmd: 'gitlab-runner status',
             },
-          }),
+          ),
         ]),
 
         /**

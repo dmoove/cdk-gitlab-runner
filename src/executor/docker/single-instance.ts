@@ -1,23 +1,17 @@
-import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Instance } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { GlCfnInit } from './cfn-init';
 import { BaseDockerExecutorProps } from './docker-executor';
-import { IExecutor } from '../executor';
 
 export interface DockerExecutorInstanceProps extends BaseDockerExecutorProps {}
 
-export class DockerExecutorInstance extends Construct implements IExecutor {
-  readonly executor: Instance | AutoScalingGroup;
-
+export class DockerExecutorInstance extends Instance {
   constructor(
     scope: Construct,
     id: string,
     props: DockerExecutorInstanceProps,
   ) {
-    super(scope, id);
-
-    this.executor = new Instance(this, 'Instance', {
+    super(scope, id, {
       instanceType: props.instanceType,
       machineImage: props.machineImage,
       blockDevices: [
@@ -32,14 +26,15 @@ export class DockerExecutorInstance extends Construct implements IExecutor {
         },
       ],
       vpc: props.vpcConfig.vpc,
-      init: GlCfnInit.createInit(this, {
+      init: GlCfnInit.createInit(scope, {
         tags: props.tags,
         config: props.config,
         tokenSecret: props.tokenSecret,
+        url: props.gitlabUrl,
       }),
       vpcSubnets: props.vpcConfig.vpcSubnets,
     });
 
-    GlCfnInit.addAwsCfnBootstrap(this.executor);
+    GlCfnInit.addAwsCfnBootstrap(this);
   }
 }

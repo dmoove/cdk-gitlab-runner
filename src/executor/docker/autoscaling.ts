@@ -4,25 +4,21 @@ import {
   Signals,
   UpdatePolicy,
 } from 'aws-cdk-lib/aws-autoscaling';
-import { Instance } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { GlCfnInit } from './cfn-init';
 import { BaseDockerExecutorProps } from './docker-executor';
-import { IExecutor } from '../executor';
+import { DrainStateMachine } from '../../drain-runner';
 
 export interface DockerExecutorAutoscalingProps
   extends BaseDockerExecutorProps {}
 
-export class DockerExecutorAutoscaling extends Construct implements IExecutor {
-  readonly executor: Instance | AutoScalingGroup;
-
+export class DockerExecutorAutoscaling extends AutoScalingGroup {
   constructor(
     scope: Construct,
     id: string,
     props: DockerExecutorAutoscalingProps,
   ) {
-    super(scope, id);
-    this.executor = new AutoScalingGroup(this, 'ASG', {
+    super(scope, id, {
       minCapacity: props.autoscalingConfig?.minCapacity,
       maxCapacity: props.autoscalingConfig?.maxCapacity,
       instanceType: props.instanceType,
@@ -50,14 +46,24 @@ export class DockerExecutorAutoscaling extends Construct implements IExecutor {
       requireImdsv2: true,
     });
 
-    this.executor.applyCloudFormationInit(
+    this.applyCloudFormationInit(
       GlCfnInit.createInit(this, {
         tags: props.tags,
         config: props.config,
         tokenSecret: props.tokenSecret,
+        url: props.gitlabUrl,
       }),
     );
 
-    GlCfnInit.addAwsCfnBootstrap(this.executor);
+    GlCfnInit.addAwsCfnBootstrap(this);
+
+    new DrainStateMachine(this, 'DrainStateMachine', {
+      autoScalingGroup: this,
+      functionProps: {
+        gitEndpoint: props.gitlabUrl,
+        secret: props.tokenSecret,
+        autoScalingGroup: this,
+      },
+    });
   }
 }

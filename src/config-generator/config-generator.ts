@@ -7,9 +7,6 @@ import { GlConfig } from '../types/runner-config';
 
 /**
  * Properties for the GlConfigGenerator class.
- *
- * @export
- * @interface GlConfigGeneratorProps
  */
 export interface GlConfigGeneratorProps {
   /**
@@ -59,15 +56,40 @@ export interface ConfigDockerExecutor {
    * @default false
    */
   readonly disableCache?: boolean;
+
+  /**
+   * add custom environment variables
+   */
+  readonly env?: EnvVariables;
+}
+
+type EnvVariables = Record<string, string>;
+
+export interface IGitLabConfig {
+  /**
+   * Adds an executor to the configuration.
+   *
+   * @param props The properties for the executor.
+   */
+  addDockerExecutor(props?: ConfigDockerExecutor): void;
+
+  /**
+   * Adds a cache to the configuration.
+   * @param scope
+   * @param bucket
+   */
+  addCache(scope: Construct, bucket: GitLabCacheBucket): void;
+
+  /**
+   * Generates the GitLab configuration as a TOML string.
+   */
+  generateToml(): string;
 }
 
 /**
  * Generates a gitlab config toml file
- *
- * @export
- * @class GlConfigGenerator
  */
-export class GitLabConfig {
+export class GitLabConfig implements IGitLabConfig {
   private readonly config: GlConfig;
   private readonly url: string;
 
@@ -79,14 +101,24 @@ export class GitLabConfig {
     };
   }
 
-  addDockerExecutor(props?: ConfigDockerExecutor) {
-    this.config.runners.push({
-      url: this.url,
-      token: '{TOKEN}',
-      executor: GitlabExecutor.DOCKER,
-    });
+  // Ensure a base runner is always available for modifications
+  private ensureBaseRunner() {
+    if (this.config.runners.length === 0) {
+      this.config.runners.push({
+        url: this.url,
+        token: '{TOKEN}',
+        executor: GitlabExecutor.DOCKER,
+        environment: [],
+      });
+    }
+  }
 
-    this.config.runners[0].docker = {
+  public addDockerExecutor(props?: ConfigDockerExecutor) {
+    this.ensureBaseRunner();
+
+    const runner = this.config.runners[0];
+    runner.executor = GitlabExecutor.DOCKER;
+    runner.docker = {
       image: props?.gitlabImage ?? 'ubuntu:20.04',
       privileged: props?.privileged ?? false,
       disable_cache: props?.disableCache ?? false,
@@ -97,39 +129,39 @@ export class GitLabConfig {
       ],
     };
 
-    this.addEnvironment('DOCKER_AUTH_CONFIG', '{ "credsStore": "ecr-login" }');
+    const envVariables: Record<string, string | undefined> = {
+      ...props?.env,
+      DOCKER_AUTH_CONFIG: '{ "credsStore": "ecr-login" }',
+    };
+
+    Object.entries(envVariables).forEach(([key, value]) => {
+      this.addEnvironment(key, value!);
+    });
   }
 
-  addEnvironment(key: string, value: string) {
-    if (this.config.runners.length === 0) {
-      throw new Error('No runners have been added to the configuration.');
-    }
+  private addEnvironment(key: string, value: string) {
+    this.ensureBaseRunner();
 
     const envString = `${key}=${value}`;
-
-    if (!this.config.runners[0].environment) {
-      this.config.runners[0].environment = [];
+    if (this.config.runners[0]?.environment) {
+      this.config.runners[0].environment.push(envString);
     }
-
-    this.config.runners[0].environment.push(envString);
   }
 
-  addCache(scope: Construct, bucket: GitLabCacheBucket) {
-    if (this.config.runners.length === 0) {
-      throw new Error('No runners have been added to the configuration.');
-    }
+  public addCache(scope: Construct, bucket: GitLabCacheBucket) {
+    this.ensureBaseRunner();
 
     this.config.runners[0].cache = {
       Type: 's3',
       Shared: true,
       s3: {
-        BucketName: bucket.bucket.bucketName,
+        BucketName: bucket.bucketName,
         BucketLocation: Stack.of(scope).region,
       },
     };
   }
 
-  generateToml() {
+  public generateToml() {
     return toml.stringify(this.config);
   }
 }
