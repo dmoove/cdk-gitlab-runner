@@ -15,15 +15,15 @@ export interface EditRunnerOptions {
 }
 
 export interface AutoScalingEvent {
-  'version': string;
-  'id': string;
+  version: string;
+  id: string;
   'detail-type': string;
-  'source': string;
-  'account': string;
-  'time': string;
-  'region': string;
-  'resources': string[];
-  'detail': {
+  source: string;
+  account: string;
+  time: string;
+  region: string;
+  resources: string[];
+  detail: {
     LifecycleActionToken: string;
     AutoScalingGroupName: string;
     LifecycleHookName: string;

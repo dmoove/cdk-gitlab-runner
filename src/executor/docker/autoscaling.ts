@@ -21,6 +21,7 @@ export class DockerExecutorAutoscaling extends AutoScalingGroup {
     super(scope, id, {
       minCapacity: props.autoscalingConfig?.minCapacity,
       maxCapacity: props.autoscalingConfig?.maxCapacity,
+      desiredCapacity: props.autoscalingConfig?.desiredCapacity,
       instanceType: props.instanceType,
       machineImage: props.machineImage,
       signals: Signals.waitForAll({

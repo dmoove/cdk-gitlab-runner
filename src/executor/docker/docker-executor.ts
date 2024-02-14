@@ -80,6 +80,23 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
             'Autoscaling config is required for autoscaling executor',
           );
         }
+
+        if (
+          props.autoscalingConfig.desiredCapacity >
+          props.autoscalingConfig.maxCapacity
+        ) {
+          throw new Error(
+            'autoscalingConfig.desiredCapacity should never exceed props.autoscalingConfig.maxCapacity',
+          );
+        } else if (
+          props.autoscalingConfig.desiredCapacity <
+          props.autoscalingConfig.minCapacity
+        ) {
+          throw new Error(
+            'autoscalingConfig.desiredCapacity should never be lower than props.autoscalingConfig.minCapacity',
+          );
+        }
+
         this.executor = new DockerExecutorAutoscaling(this, 'ASG', {
           autoscalingConfig: props.autoscalingConfig,
           config: props.config,
