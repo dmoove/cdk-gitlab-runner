@@ -89,6 +89,48 @@ describe('DockerExecutor', () => {
     }).toThrow('Autoscaling config is required for autoscaling executor');
   });
 
+  test('throws error if desiredCapacity is greater than maxCapacity', () => {
+    expect(() => {
+      new DockerExecutor(stack, 'DockerExecutorError', {
+        dockerExecutorType: DockerExecutorType.AUTOSCALING,
+        autoscalingConfig: {
+          minCapacity: 1,
+          maxCapacity: 2,
+          desiredCapacity: 5,
+        },
+        instanceType: new InstanceType('t3.micro'),
+        machineImage: MachineImage.latestAmazonLinux2023(),
+        vpcConfig: { vpc },
+        tokenSecret,
+        gitlabUrl: 'https://gitlab.com',
+        config,
+      });
+    }).toThrow(
+      'autoscalingConfig.desiredCapacity should never exceed props.autoscalingConfig.maxCapacity',
+    );
+  });
+
+  test('throws error if desiredCapacity is less than minCapacity', () => {
+    expect(() => {
+      new DockerExecutor(stack, 'DockerExecutorError', {
+        dockerExecutorType: DockerExecutorType.AUTOSCALING,
+        autoscalingConfig: {
+          minCapacity: 5,
+          maxCapacity: 8,
+          desiredCapacity: 1,
+        },
+        instanceType: new InstanceType('t3.micro'),
+        machineImage: MachineImage.latestAmazonLinux2023(),
+        vpcConfig: { vpc },
+        tokenSecret,
+        gitlabUrl: 'https://gitlab.com',
+        config,
+      });
+    }).toThrow(
+      'autoscalingConfig.desiredCapacity should never be lower than props.autoscalingConfig.minCapacity',
+    );
+  });
+
   test('adds tagging permissions and permissions to use and decrypt the secret', () => {
     new DockerExecutor(stack, 'DockerExecutorASG', {
       dockerExecutorType: DockerExecutorType.SINGLE_INSTANCE,
