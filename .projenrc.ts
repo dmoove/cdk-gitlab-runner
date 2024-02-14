@@ -32,6 +32,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
   dependabot: true,
 });
 
+project.jest?.addTestMatch('<rootDir>/test/**/*(*.)@(spec|test).ts?(x)');
+
 project.addGitIgnore('samples');
 project.addGitIgnore('/lambda');
 
