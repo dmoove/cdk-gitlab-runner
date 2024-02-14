@@ -86,12 +86,12 @@ describe('DockerExecutor', () => {
         gitlabUrl: 'https://gitlab.com',
         config,
       });
-    }).toThrowError('Autoscaling config is required for autoscaling executor');
+    }).toThrow('Autoscaling config is required for autoscaling executor');
   });
 
   test('adds tagging permissions and permissions to use and decrypt the secret', () => {
     new DockerExecutor(stack, 'DockerExecutorASG', {
-      dockerExecutorType: DockerExecutorType.AUTOSCALING,
+      dockerExecutorType: DockerExecutorType.SINGLE_INSTANCE,
       autoscalingConfig: { minCapacity: 1, maxCapacity: 3, desiredCapacity: 2 },
       instanceType: new InstanceType('t3.micro'),
       machineImage: MachineImage.latestAmazonLinux2023(),
@@ -107,24 +107,27 @@ describe('DockerExecutor', () => {
       PolicyDocument: {
         Statement: Match.arrayWith([
           {
-            Action: [
-              'secretsmanager:GetSecretValue',
-              'secretsmanager:DescribeSecret',
-            ],
+            Action: Match.arrayWith([
+              'ec2:CreateTags',
+              'ec2:DescribeInstances',
+            ]),
+            Resource: '*',
             Effect: 'Allow',
-            Resource: {
-              Ref: Match.anyValue(),
+            Condition: {
+              StringEquals: {
+                'aws:ResourceTag/aws:cloudformation:stack-name':
+                  Match.anyValue(),
+              },
             },
           },
           {
-            Action: ['ec2:CreateTags', 'ec2:DescribeInstances'],
-            Resource: ['*'],
+            Action: Match.arrayWith([
+              'secretsmanager:GetSecretValue',
+              'secretsmanager:DescribeSecret',
+            ]),
             Effect: 'Allow',
-            Conditions: {
-              StringEquals: {
-                'aws:ResourceTag/aws:cloudformation:stack-name':
-                  Stack.of(stack).stackName,
-              },
+            Resource: {
+              Ref: Match.anyValue(),
             },
           },
         ]),
