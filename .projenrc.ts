@@ -1,4 +1,5 @@
 import { awscdk } from 'projen';
+import { EndOfLine, TrailingComma } from 'projen/lib/javascript';
 const project = new awscdk.AwsCdkConstructLibrary({
   author: 'DMoove Solutions GmbH',
   authorAddress: 'yannick.tresch@dmoove.com',
@@ -30,6 +31,25 @@ const project = new awscdk.AwsCdkConstructLibrary({
     ],
   },
   dependabot: true,
+  prettier: true,
+  prettierOptions: {
+    settings: {
+      semi: true,
+      singleQuote: true,
+      trailingComma: TrailingComma.ALL,
+      tabWidth: 2,
+      endOfLine: EndOfLine.LF,
+    },
+  },
+  eslintOptions: {
+    prettier: true,
+    dirs: ['src'],
+  },
+  eslint: true,
+  prerelease: 'pre',
+  catalog: {
+    twitter: 'yanu23',
+  },
 });
 
 project.jest?.addTestMatch('<rootDir>/test/**/*(*.)@(spec|test).ts?(x)');
