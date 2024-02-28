@@ -970,9 +970,9 @@
     undici-types "~5.26.4"
 
 "@types/node@^18":
-  version "18.19.15"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.15.tgz#313a9d75435669a57fc28dc8694e7f4c4319f419"
-  integrity sha512-AMZ2UWx+woHNfM11PyAEQmfSxi05jm9OlkxczuHeEqmvwPkYj6MWv44gbzDPefYOLysTOFyI3ziiy2ONmUZfpA==
+  version "18.19.20"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.20.tgz#716e9fca5012e597748de256f1399a7f8376433e"
+  integrity sha512-SKXZvI375jkpvAj8o+5U2518XQv76mAsixqfXiVyWyXZbVWQK25RurFovYpVIxVzul0rZoH58V/3SkEnm7s3qA==
   dependencies:
     undici-types "~5.26.4"
 
