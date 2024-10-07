@@ -106,7 +106,7 @@ describe('DockerExecutor', () => {
         config,
       });
     }).toThrow(
-      'autoscalingConfig.desiredCapacity should never exceed props.autoscalingConfig.maxCapacity',
+      'autoscalingConfig.desiredCapacity should never exceed maxCapacity',
     );
   });
 
@@ -127,7 +127,7 @@ describe('DockerExecutor', () => {
         config,
       });
     }).toThrow(
-      'autoscalingConfig.desiredCapacity should never be lower than props.autoscalingConfig.minCapacity',
+      'autoscalingConfig.desiredCapacity should never be lower than minCapacity',
     );
   });
 

@@ -28,18 +28,25 @@ export interface GitLabCacheBucketProps {
 
 export class GitLabCacheBucket extends Bucket {
   constructor(scope: Construct, id: string, props: GitLabCacheBucketProps) {
+    const stack = Stack.of(scope);
+    const bucketName = props.bucketNamePrefix
+      ? `${props.bucketNamePrefix}-gitlab-cache`
+      : `${stack.account}-${stack.region}-gitlab-cache`;
+
     super(scope, id, {
       autoDeleteObjects: true,
-      bucketName: props.bucketNamePrefix
-        ? `${props.bucketNamePrefix}-gitlab-cache`
-        : `${Stack.of(scope).account}-${Stack.of(scope).region}-gitlab-cache`,
+      bucketName: bucketName,
       encryptionKey: props.encryptionKey,
       removalPolicy: RemovalPolicy.DESTROY,
       enforceSSL: true,
     });
 
+    this.addCacheLifecycleRule(props.cacheDuration ?? Duration.days(7));
+  }
+
+  private addCacheLifecycleRule(cacheDuration: Duration) {
     this.addLifecycleRule({
-      expiration: props.cacheDuration ?? Duration.days(7),
+      expiration: cacheDuration,
     });
   }
 }

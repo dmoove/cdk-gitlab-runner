@@ -147,7 +147,7 @@ export interface IGitLabRunner {
    * Adds a Docker executor to the GitLab Runner configuration.
    *
    * @default - no docker executor added to the configuration.
-   * @param type - the type of Docker executor.
+   * @param executorType - the type of Docker executor.
    * @param props - properties for the Docker executor.
    * @returns - the GitLabRunner instance.
    * @example
@@ -158,7 +158,7 @@ export interface IGitLabRunner {
    * });
    */
   addDockerExecutor(
-    type: DockerExecutorType,
+    executorType: DockerExecutorType,
     props: DockerExecutorAttributes,
   ): void;
 }
@@ -194,10 +194,13 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
 
   /**
    * Adds a Docker executor to the GitLab Runner configuration.
-   * @param type
+   * @param executorType
    * @param props
    */
-  addDockerExecutor(type: DockerExecutorType, props: DockerExecutorAttributes) {
+  addDockerExecutor(
+    executorType: DockerExecutorType,
+    props: DockerExecutorAttributes,
+  ) {
     this.configurationActions.push((config: GitLabConfig) =>
       config.addDockerExecutor(props.configProp),
     );
@@ -206,7 +209,7 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
 
     new DockerExecutor(this, 'DockerExecutor', {
       config: this.glConfig,
-      dockerExecutorType: type,
+      dockerExecutorType: executorType,
       instanceType: props.instanceType,
       machineImage: props.machineImage,
       vpcConfig: props.vpcConfig,

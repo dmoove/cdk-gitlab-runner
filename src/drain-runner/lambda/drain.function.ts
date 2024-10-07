@@ -25,53 +25,51 @@ export async function handler(event: AutoScalingEvent) {
     paused: true,
   };
 
-  getSecretValue(secretArn)
-    .then((secret) => {
-      const gitlabClient = new Runners({
-        host: gitEndpoint,
-        token: secret.PrivateToken,
-      });
-
-      gitlabClient.edit(runnerId, options).catch((error) => {
-        throw new Error(error);
-      });
-
-      gitlabClient
-        .jobs(runnerId)
-        .then((response) => {
-          const jobs = response as Job[];
-
-          const openJobs = jobs.filter((job) => job.status === 'running');
-          if (openJobs.length === 0) {
-            asgClient.completeLifecycleAction({
-              ...asgParams,
-              LifecycleActionResult: 'CONTINUE',
-            });
-
-            return JSON.stringify({
-              statusCode: 200,
-              body: 'Success',
-            });
-          } else {
-            asgClient.recordLifecycleActionHeartbeat(asgParams);
-
-            return JSON.stringify({
-              statusCode: 200,
-              body: 'Heartbeat',
-            });
-          }
-        })
-        .catch((error) => {
-          throw new Error(error);
-        });
-    })
-    .catch((error) => {
-      throw new Error(error);
+  try {
+    const secret = await getSecretValue(secretArn);
+    const gitlabClient = new Runners({
+      host: gitEndpoint,
+      token: secret.PrivateToken,
     });
+
+    await gitlabClient.edit(runnerId, options);
+
+    const jobs = (await gitlabClient.jobs(runnerId)) as Job[];
+    const openJobs = jobs.filter((job) => job.status === 'running');
+
+    if (openJobs.length === 0) {
+      await asgClient
+        .completeLifecycleAction({
+          ...asgParams,
+          LifecycleActionResult: 'CONTINUE',
+        })
+        .promise();
+
+      return {
+        statusCode: 200,
+        body: 'Success',
+      };
+    } else {
+      await asgClient.recordLifecycleActionHeartbeat(asgParams).promise();
+
+      return {
+        statusCode: 200,
+        body: 'Heartbeat',
+      };
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error);
+      throw new Error(`Handler failed: ${error.message}`);
+    } else {
+      console.error('An unknown error occurred', error);
+      throw new Error('Handler failed due to an unknown error');
+    }
+  }
 }
 
 async function getRunnerId(instanceId: string): Promise<number> {
-  var params = {
+  const params: EC2.DescribeTagsRequest = {
     Filters: [
       {
         Name: 'resource-id',
@@ -82,9 +80,9 @@ async function getRunnerId(instanceId: string): Promise<number> {
 
   const tags = await ec2Client.describeTags(params).promise();
   let runnerId = 0;
-  tags.Tags!.forEach((tag) => {
+  tags.Tags?.forEach((tag) => {
     if (tag.Key === 'RunnerId') {
-      runnerId = parseInt(tag.Value || '0');
+      runnerId = parseInt(tag.Value || '0', 10);
     }
   });
   return runnerId;
@@ -105,7 +103,15 @@ async function getSecretValue(secretName: string): Promise<GitLabSecret> {
     const secret: GitLabSecret = JSON.parse(secretString);
     return secret;
   } catch (err) {
-    console.error(err);
-    throw err;
+    if (err instanceof Error) {
+      console.error(err);
+      throw new Error(`Failed to retrieve secret: ${err.message}`);
+    } else {
+      console.error(
+        'An unknown error occurred while retrieving the secret',
+        err,
+      );
+      throw new Error('Failed to retrieve secret due to an unknown error');
+    }
   }
 }
