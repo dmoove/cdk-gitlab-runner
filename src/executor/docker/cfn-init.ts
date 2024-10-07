@@ -34,7 +34,7 @@ export class GlCfnInit extends Construct {
     props: GlCfnInitProps,
   ): CloudFormationInit {
     const tags = [
-      ...(props.tags ?? []),
+      ...(props.tags?.filter((tag) => tag.trim().length > 0) ?? []), // delete empty tags
       Stack.of(that).account,
       Stack.of(that).region,
       'docker',
@@ -58,13 +58,9 @@ export class GlCfnInit extends Construct {
          * Then we configure awslogs, so that important logs are getting forwarded
          */
         base: new InitConfig([
-          InitPackage.yum('git'),
-          InitPackage.yum('jq'),
-          InitFile.fromString(
-            '/root/.aws/config',
-            `[default]
-region = ${Stack.of(that).region}`,
-          ),
+          InitCommand.shellCommand('command -v git || yum install -y git'),
+          InitCommand.shellCommand('command -v jq || yum install -y jq'),
+          GlCfnInit.setupAwsConfig(that),
         ]),
 
         /**
@@ -134,5 +130,13 @@ region = ${Stack.of(that).region}`,
    */
   public static addAwsCfnBootstrap(target: Instance | AutoScalingGroup) {
     target.addUserData('yum install -y aws-cfn-bootstrap');
+  }
+
+  private static setupAwsConfig(scope: Construct): InitFile {
+    return InitFile.fromString(
+      '/root/.aws/config',
+      `[default]
+  region = ${Stack.of(scope).region}`,
+    );
   }
 }

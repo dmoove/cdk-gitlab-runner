@@ -18,6 +18,7 @@ import {
   Succeed,
   Wait,
   WaitTime,
+  DefinitionBody,
 } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
@@ -40,16 +41,30 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
   constructor(scope: Construct, id: string, props: DrainStateMachineProps) {
     super(scope, id);
 
-    this.drainFunction = new DrainFunction(this, 'DrainFunction', {
+    this.drainFunction = this.createDrainFunction(props);
+    const drainLogGroup = this.createLogGroup();
+    const definition = this.createStateMachineDefinition();
+    this.stateMachine = this.createStateMachine(definition, drainLogGroup);
+
+    this.attachPolicies(props);
+    this.createLifecycleHook(props);
+  }
+
+  private createDrainFunction(props: DrainStateMachineProps): DrainFunction {
+    return new DrainFunction(this, 'DrainFunction', {
       gitEndpoint: props.functionProps.gitEndpoint,
       secret: props.functionProps.secret,
       autoScalingGroup: props.autoScalingGroup,
     });
+  }
 
-    const drainLogGroup = new LogGroup(this, 'LogGroup', {
+  private createLogGroup(): LogGroup {
+    return new LogGroup(this, 'LogGroup', {
       retention: RetentionDays.ONE_MONTH,
     });
+  }
 
+  private createStateMachineDefinition(): Chain {
     const terminateTask = new LambdaInvoke(this, 'terminateTask', {
       lambdaFunction: this.drainFunction,
       resultPath: '$.taskresult',
@@ -62,10 +77,9 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
     }).next(terminateTask);
 
     const successState = new Succeed(this, 'successState');
-
     const failState = new Fail(this, 'failState');
 
-    const definition = Chain.start(terminateTask).next(
+    return Chain.start(terminateTask).next(
       choiceState
         .when(
           Condition.stringEquals('$.taskresult.Payload.body', 'Success'),
@@ -77,15 +91,22 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
         )
         .otherwise(failState),
     );
+  }
 
-    this.stateMachine = new StateMachine(this, 'GitLabTerminateStateMachine', {
-      definition,
+  private createStateMachine(
+    definition: Chain,
+    drainLogGroup: LogGroup,
+  ): StateMachine {
+    return new StateMachine(this, 'GitLabTerminateStateMachine', {
+      definitionBody: DefinitionBody.fromChainable(definition),
       logs: {
         destination: drainLogGroup,
         level: LogLevel.ERROR,
       },
     });
+  }
 
+  private attachPolicies(props: DrainStateMachineProps): void {
     this.drainFunction.addToRolePolicy(
       new PolicyStatement({
         actions: ['ec2:DescribeInstances'],
@@ -102,7 +123,9 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
         resources: [props.autoScalingGroup.autoScalingGroupArn],
       }),
     );
+  }
 
+  private createLifecycleHook(props: DrainStateMachineProps): void {
     const lifecycleHookTerminate = props.autoScalingGroup.addLifecycleHook(
       'TerminateLifecycle',
       {
