@@ -24,20 +24,53 @@ import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
 import { DrainFunction, DrainFunctionProps } from './drain-function';
 
+/**
+ * Properties for {@link DrainStateMachine}.
+ */
 export interface DrainStateMachineProps {
+  /**
+   * Configuration for the underlying {@link DrainFunction}.
+   */
   readonly functionProps: DrainFunctionProps;
+  /**
+   * AutoScaling group that hosts the runner instances.
+   */
   readonly autoScalingGroup: IAutoScalingGroup;
 }
 
+/**
+ * Exposed interface of a drain state machine construct.
+ */
 export interface IDrainStateMachine {
+  /**
+   * Lambda function responsible for draining the instance.
+   */
   readonly drainFunction: DrainFunction;
+  /**
+   * Step Functions state machine used for draining.
+   */
   readonly stateMachine: IStateMachine;
 }
 
+/**
+ * Construct that provisions the resources required to gracefully drain and
+ * terminate runner instances.
+ *
+ * A Lambda function is invoked through a Step Functions state machine which is
+ * triggered by AutoScaling lifecycle hooks. The function pauses the runner and
+ * waits until no jobs are running before allowing the instance to terminate.
+ */
 export class DrainStateMachine extends Construct implements IDrainStateMachine {
   readonly drainFunction: DrainFunction;
   readonly stateMachine: IStateMachine;
 
+  /**
+   * Create a new drain state machine.
+   *
+   * @param scope - construct scope
+   * @param id - id of the construct
+   * @param props - configuration for the drain behaviour
+   */
   constructor(scope: Construct, id: string, props: DrainStateMachineProps) {
     super(scope, id);
 
@@ -50,6 +83,9 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
     this.createLifecycleHook(props);
   }
 
+  /**
+   * Create the lambda function which handles the draining logic.
+   */
   private createDrainFunction(props: DrainStateMachineProps): DrainFunction {
     return new DrainFunction(this, 'DrainFunction', {
       gitEndpoint: props.functionProps.gitEndpoint,
@@ -58,12 +94,18 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
     });
   }
 
+  /**
+   * Create a log group for state machine logs.
+   */
   private createLogGroup(): LogGroup {
     return new LogGroup(this, 'LogGroup', {
       retention: RetentionDays.ONE_MONTH,
     });
   }
 
+  /**
+   * Build the step function definition that manages the drain process.
+   */
   private createStateMachineDefinition(): Chain {
     const terminateTask = new LambdaInvoke(this, 'terminateTask', {
       lambdaFunction: this.drainFunction,
@@ -93,6 +135,9 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
     );
   }
 
+  /**
+   * Instantiate the state machine resource.
+   */
   private createStateMachine(
     definition: Chain,
     drainLogGroup: LogGroup,
@@ -106,6 +151,9 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
     });
   }
 
+  /**
+   * Attach IAM permissions required by the drain function.
+   */
   private attachPolicies(props: DrainStateMachineProps): void {
     this.drainFunction.addToRolePolicy(
       new PolicyStatement({
@@ -125,6 +173,10 @@ export class DrainStateMachine extends Construct implements IDrainStateMachine {
     );
   }
 
+  /**
+   * Create an AutoScaling lifecycle hook to start the state machine on
+   * instance termination.
+   */
   private createLifecycleHook(props: DrainStateMachineProps): void {
     const lifecycleHookTerminate = props.autoScalingGroup.addLifecycleHook(
       'TerminateLifecycle',

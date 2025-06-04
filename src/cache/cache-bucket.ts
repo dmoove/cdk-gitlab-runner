@@ -26,6 +26,9 @@ export interface GitLabCacheBucketProps {
   readonly cacheDuration?: Duration;
 }
 
+/**
+ * S3 bucket used by the runners to store job cache.
+ */
 export class GitLabCacheBucket extends Bucket {
   constructor(scope: Construct, id: string, props: GitLabCacheBucketProps) {
     const stack = Stack.of(scope);
@@ -44,6 +47,9 @@ export class GitLabCacheBucket extends Bucket {
     this.addCacheLifecycleRule(props.cacheDuration ?? Duration.days(7));
   }
 
+  /**
+   * Configure the lifecycle rule that cleans up cached objects.
+   */
   private addCacheLifecycleRule(cacheDuration: Duration) {
     this.addLifecycleRule({
       expiration: cacheDuration,

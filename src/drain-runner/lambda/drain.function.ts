@@ -9,6 +9,13 @@ const asgClient = new AutoScaling();
 const secretArn = process.env.SECRET_ARN;
 const gitEndpoint = process.env.GIT_ENDPOINT;
 
+/**
+ * Entry point for the drain Lambda.
+ *
+ * The function pauses the runner associated with the EC2 instance and waits
+ * until no jobs are running. It then signals the AutoScaling group to
+ * continue the termination.
+ */
 export async function handler(event: AutoScalingEvent) {
   const instanceId = event.detail.EC2InstanceId;
 
@@ -68,6 +75,9 @@ export async function handler(event: AutoScalingEvent) {
   }
 }
 
+/**
+ * Retrieve the GitLab runner ID stored as a tag on the EC2 instance.
+ */
 async function getRunnerId(instanceId: string): Promise<number> {
   const params: EC2.DescribeTagsRequest = {
     Filters: [
@@ -88,6 +98,9 @@ async function getRunnerId(instanceId: string): Promise<number> {
   return runnerId;
 }
 
+/**
+ * Fetch and parse the GitLab secret containing authentication tokens.
+ */
 async function getSecretValue(secretName: string): Promise<GitLabSecret> {
   try {
     const data = await smClient

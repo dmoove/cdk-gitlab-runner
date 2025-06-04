@@ -163,6 +163,13 @@ export interface IGitLabRunner {
   ): void;
 }
 
+/**
+ * CDK construct that configures a GitLab runner.
+ *
+ * The construct manages the base runner configuration and allows adding
+ * Docker executors and optional caching. The resulting configuration is
+ * stored in {@link glConfig} and used by the executor constructs.
+ */
 export class GitLabRunner extends Construct implements IGitLabRunner {
   readonly encryptionKey: Key;
   readonly glConfig: GitLabConfig;
@@ -170,6 +177,13 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
   readonly gitlabUrl: string;
   private configurationActions: Array<(config: GitLabConfig) => void> = [];
 
+  /**
+   * Creates a new {@link GitLabRunner} construct.
+   *
+   * @param scope - construct scope
+   * @param id - id of the construct
+   * @param props - runner configuration properties
+   */
   constructor(scope: Construct, id: string, props: GitLabRunnerProps) {
     super(scope, id);
 
@@ -239,6 +253,13 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
     });
   }
 
+  /**
+   * Apply all queued configuration changes to the internal GitLab config.
+   *
+   * Each call to {@link addDockerExecutor} or {@link addCache} pushes a
+   * configuration action into an internal array. This helper executes all
+   * actions so that the current state is reflected in {@link glConfig}.
+   */
   private applyConfigurationChanges() {
     this.configurationActions.forEach((action) => action(this.glConfig));
   }
