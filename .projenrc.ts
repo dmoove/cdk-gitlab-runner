@@ -11,6 +11,27 @@ const project = new awscdk.AwsCdkConstructLibrary({
   name: '@dmoove/cdk-gitlab-runner',
   projenrcTs: true,
   repositoryUrl: 'https://github.com/dmoove/cdk-gitlab-runner',
+  githubOptions: {
+    pullRequestLintOptions: {
+      semanticTitleOptions: {
+        types: [
+          'feat',
+          'fix',
+          'chore',
+          'docs',
+          'refactor',
+          'test',
+          'build',
+          'ci',
+          'perf',
+          'codex',
+        ],
+        requireScope: true,
+      },
+    },
+  },
+  minNodeVersion: '20.0.0',
+  workflowNodeVersion: '20.x',
   bundledDeps: [
     '@iarna/toml@2.2.5',
     '@types/aws-lambda@8.10.133',
@@ -53,6 +74,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
 });
 
 project.jest?.addTestMatch('<rootDir>/test/**/*(*.)@(spec|test).ts?(x)');
+
+project.addDevDeps('@types/node@^20');
 
 project.addGitIgnore('samples');
 project.addGitIgnore('/lambda');
