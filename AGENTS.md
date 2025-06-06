@@ -12,6 +12,8 @@ This repository is maintained using [projen](https://github.com/projen/projen).
 4. Run `npx projen` whenever you modified `.projenrc.ts` **or** after
    installing dependencies. This regenerates project files and prevents the CI
    job from reporting that files changed during build.
+   If `npm run build` reports modified files, run `npx projen` again and commit
+   the regenerated outputs.
 5. Format all TypeScript and JSON files with `npx prettier --write`.
 6. Lint with `npm run eslint` then run `npm test`.
    If tests do not start, ensure dependencies were installed and Node 22 is active.
