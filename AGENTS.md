@@ -5,18 +5,19 @@ This repository is maintained using [projen](https://github.com/projen/projen).
 ## Local workflow
 
 1. Use **Node.js 22 LTS**. If you use `nvm`, activate it with `nvm use 22`.
-2. Install dependencies with `npm install` once after cloning.
+2. Install `ts-node`.
+3. Install dependencies with `npm install` once after cloning.
    This creates the `node_modules` directory so local `projen` and `jest` are available.
    After installation `npm test` should run without prompts.
-3. After editing `.projenrc.ts` **always** run `npx projen` to refresh generated
+4. After editing `.projenrc.ts` **always** run `npx projen` to refresh generated
    files before committing.
-4. Format all TypeScript and JSON files with `npx prettier --write`.
-5. Lint with `npm run eslint` then run `npm test`.
+5. Format all TypeScript and JSON files with `npx prettier --write`.
+6. Lint with `npm run eslint` then run `npm test`.
    If tests do not start, ensure dependencies were installed and Node 22 is active.
    If Jest runs out of memory, prepend `NODE_OPTIONS=--max_old_space_size=4096`.
-6. Build the project using `npm run build`.
+7. Build the project using `npm run build`.
    The same `NODE_OPTIONS` flag can be used when memory errors occur.
-7. Commit changes using short present‑tense messages.
+8. Commit changes using short present‑tense messages.
 
 ## Pull Requests
 
