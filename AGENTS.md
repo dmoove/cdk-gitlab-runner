@@ -10,7 +10,9 @@ This repository is maintained using [projen](https://github.com/projen/projen).
    files before committing.
 4. Format all TypeScript and JSON files with `npx prettier --write`.
 5. Lint with `npm run eslint` then run `npm test`.
+   If Jest runs out of memory, prepend `NODE_OPTIONS=--max_old_space_size=4096`.
 6. Build the project using `npm run build`.
+   The same `NODE_OPTIONS` flag can be used when memory errors occur.
 7. Commit changes using short present‑tense messages.
 
 ## Pull Requests
