@@ -177,6 +177,9 @@
       "steps": [
         {
           "exec": "esbuild --bundle --external:aws-sdk --platform=node src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js"
+        },
+        {
+          "exec": "esbuild --bundle --external:aws-sdk --platform=node src/scaler/lambda/scaler.function.ts --outfile=lambda/scaler/index.js"
         }
       ]
     },

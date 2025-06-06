@@ -33,6 +33,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^22",
+    "@types/node-fetch": "2.6.4",
     "@typescript-eslint/eslint-plugin": "^6",
     "@typescript-eslint/parser": "^6",
     "aws-cdk-lib": "2.126.0",
@@ -65,14 +66,16 @@
     "@types/aws-lambda": "8.10.133",
     "aws-sdk": "2.1555.0",
     "esbuild": "0.20.0",
-    "gitlab": "14.2.2"
+    "gitlab": "14.2.2",
+    "node-fetch": "2.7.0"
   },
   "bundledDependencies": [
     "@iarna/toml",
     "@types/aws-lambda",
     "aws-sdk",
     "esbuild",
-    "gitlab"
+    "gitlab",
+    "node-fetch"
   ],
   "keywords": [
     "aws",

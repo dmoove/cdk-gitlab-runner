@@ -46,6 +46,43 @@ runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
 });
 ```
 
+### Autoscaling Example
+
+Use the autoscaling executor type to automatically adjust the number of runner
+instances. The `autoscalingConfig` defines the minimum, maximum and desired
+capacity of the Auto Scaling Group.
+
+```typescript
+runner.addDockerExecutor(DockerExecutorType.AUTOSCALING, {
+  instanceType: InstanceType.of(InstanceClass.T3A, InstanceSize.MEDIUM),
+  machineImage: MachineImage.latestAmazonLinux2023(),
+  vpc,
+  autoscalingConfig: {
+    minCapacity: 1,
+    maxCapacity: 5,
+    desiredCapacity: 2,
+  },
+});
+```
+
+### Dynamic Scaling Example
+
+Add the `RunnerScaler` construct to adjust the Auto Scaling Group based on the
+pending job count. The scaler publishes the queue length as a CloudWatch metric
+and attaches a scaling policy.
+
+```typescript
+import { RunnerScaler } from '@yanu23/cdk-gitlab-runner';
+import { Schedule } from 'aws-cdk-lib/aws-events';
+
+const scaler = new RunnerScaler(stack, 'RunnerScaler', {
+  autoScalingGroup: runnerAsg,
+  gitlabUrl: 'https://gitlab.com/',
+  tokenSecret: token,
+  schedule: Schedule.rate(Duration.minutes(5)),
+});
+```
+
 ## Development
 
 Use [projen](https://github.com/projen/projen) to manage this repository.

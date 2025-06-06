@@ -53,6 +53,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'gitlab@14.2.2',
     'aws-sdk@2.1555.0',
     'esbuild@0.20.0',
+    'node-fetch@2.7.0',
   ],
   keywords: ['cdk', 'gitlab', 'runner', 'aws', 'cdk-constructs'],
   releaseToNpm: false,
@@ -91,6 +92,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
 project.jest?.addTestMatch('<rootDir>/test/**/*(*.)@(spec|test).ts?(x)');
 
 project.addDevDeps('@types/node@^22');
+project.addDeps('node-fetch@2.7.0');
+project.addDevDeps('@types/node-fetch@2.6.4');
 
 project.addGitIgnore('samples');
 project.addGitIgnore('/lambda');
@@ -100,6 +103,9 @@ const preCompileTask = project.tasks.tryFind('pre-compile');
 if (preCompileTask) {
   preCompileTask.exec(
     `esbuild ${commonOptions} src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js`,
+  );
+  preCompileTask.exec(
+    `esbuild ${commonOptions} src/scaler/lambda/scaler.function.ts --outfile=lambda/scaler/index.js`,
   );
 }
 
