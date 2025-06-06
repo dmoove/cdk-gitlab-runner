@@ -103,4 +103,9 @@ if (preCompileTask) {
   );
 }
 
+const testTask = project.tasks.tryFind('test');
+if (testTask && preCompileTask) {
+  testTask.prependSpawn(preCompileTask);
+}
+
 project.synth();

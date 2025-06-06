@@ -210,6 +210,9 @@
       "description": "Run tests",
       "steps": [
         {
+          "spawn": "pre-compile"
+        },
+        {
           "exec": "jest --passWithNoTests --coverageProvider=v8 --updateSnapshot",
           "receiveArgs": true
         },
