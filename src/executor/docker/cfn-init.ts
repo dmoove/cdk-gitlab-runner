@@ -69,7 +69,8 @@ export class GlCfnInit extends Construct {
         docker: new InitConfig([
           InitPackage.yum('docker'),
           InitCommand.shellCommand('sudo service docker start'),
-          InitCommand.shellCommand('sudo usermod -a -G docker ec2-user'), // TODO: new user?
+          InitCommand.shellCommand('sudo useradd -m gitlab-runner || true'),
+          InitCommand.shellCommand('sudo usermod -a -G docker gitlab-runner'),
         ]),
 
         /**

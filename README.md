@@ -1,6 +1,17 @@
 # @yanu23/cdk-gitlab-runner
 
-A construct to build gitlab runners running in AWS.
+Deploy GitLab runners on AWS with AWS CDK.
+
+## Prerequisites
+
+- Node.js 22 LTS
+- AWS CDK v2
+
+## Installation
+
+```bash
+npm install @dmoove/cdk-gitlab-runner
+```
 
 ## Example
 
@@ -33,4 +44,24 @@ runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
   machineImage: MachineImage.latestAmazonLinux2023(),
   vpc,
 });
+```
+
+## Development
+
+Use [projen](https://github.com/projen/projen) to manage this repository.
+After cloning run `npm install` once to create `node_modules`.
+When you change `.projenrc.ts` run:
+
+```bash
+npx projen
+```
+
+Use Node.js 22 (for example with `nvm use 22`) before running commands.
+
+Run lint, tests and build before committing:
+
+```bash
+npm run eslint
+npm test
+npm run build
 ```

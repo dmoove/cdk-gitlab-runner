@@ -11,6 +11,42 @@ const project = new awscdk.AwsCdkConstructLibrary({
   name: '@dmoove/cdk-gitlab-runner',
   projenrcTs: true,
   repositoryUrl: 'https://github.com/dmoove/cdk-gitlab-runner',
+  githubOptions: {
+    pullRequestLintOptions: {
+      semanticTitleOptions: {
+        types: [
+          'feat',
+          'fix',
+          'chore',
+          'docs',
+          'refactor',
+          'test',
+          'build',
+          'ci',
+          'perf',
+          'codex',
+        ],
+        requireScope: true,
+      },
+    },
+  },
+  pullRequestTemplateContents: [
+    '<!-- Title must follow `type[scope]: description`.',
+    'Allowed types: feat, fix, chore, docs, refactor, test, build, ci, perf, codex.',
+    'Use `codex[scope]:` for AI generated changes. -->',
+    '',
+    'Fixes #',
+    '',
+    '## Summary',
+    '',
+    '-',
+    '',
+    '## Testing',
+    '',
+    '-',
+  ],
+  minNodeVersion: '22.0.0',
+  workflowNodeVersion: '22.x',
   bundledDeps: [
     '@iarna/toml@2.2.5',
     '@types/aws-lambda@8.10.133',
@@ -54,6 +90,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
 project.jest?.addTestMatch('<rootDir>/test/**/*(*.)@(spec|test).ts?(x)');
 
+project.addDevDeps('@types/node@^22');
+
 project.addGitIgnore('samples');
 project.addGitIgnore('/lambda');
 
@@ -63,6 +101,11 @@ if (preCompileTask) {
   preCompileTask.exec(
     `esbuild ${commonOptions} src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js`,
   );
+}
+
+const testTask = project.tasks.tryFind('test');
+if (testTask && preCompileTask) {
+  testTask.prependSpawn(preCompileTask);
 }
 
 project.synth();
