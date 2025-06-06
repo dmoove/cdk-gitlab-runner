@@ -4,13 +4,14 @@ This repository is maintained using [projen](https://github.com/projen/projen).
 
 ## Local workflow
 
-1. Use **Node.js 20 LTS**. Agents and human contributors follow the same steps.
-2. After editing `.projenrc.ts` **always** run `npx projen` to refresh generated
+1. Install dependencies with `npm install` once after cloning the repository.
+2. Use **Node.js 20 LTS**. Agents and human contributors follow the same steps.
+3. After editing `.projenrc.ts` **always** run `npx projen` to refresh generated
    files before committing.
-3. Format all TypeScript and JSON files with `npx prettier --write`.
-4. Lint with `npm run eslint` then run `npm test`.
-5. Build the project using `npm run build`.
-6. Commit changes using short present‑tense messages.
+4. Format all TypeScript and JSON files with `npx prettier --write`.
+5. Lint with `npm run eslint` then run `npm test`.
+6. Build the project using `npm run build`.
+7. Commit changes using short present‑tense messages.
 
 ## Pull Requests
 
