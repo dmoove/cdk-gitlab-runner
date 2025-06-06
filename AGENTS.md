@@ -6,12 +6,12 @@ This repository is maintained using [projen](https://github.com/projen/projen).
 
 1. Use **Node.js 22 LTS**. If you use `nvm`, activate it with `nvm use 22`.
 2. Install `ts-node`.
-3. Install dependencies with `npm install` once after cloning.
-   This creates the `node_modules` directory so local `projen` and `jest` are available.
+3. Install dependencies with `npm install` once after cloning. This creates
+   the `node_modules` directory so local `projen` and `jest` are available.
    After installation `npm test` should run without prompts.
-4. After editing `.projenrc.ts` **always** run `npx projen` to refresh generated
-   files before committing. Failing to do so can cause the CI job to report that
-   files changed during build.
+4. Run `npx projen` whenever you modified `.projenrc.ts` **or** after
+   installing dependencies. This regenerates project files and prevents the CI
+   job from reporting that files changed during build.
 5. Format all TypeScript and JSON files with `npx prettier --write`.
 6. Lint with `npm run eslint` then run `npm test`.
    If tests do not start, ensure dependencies were installed and Node 22 is active.
