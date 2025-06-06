@@ -4,9 +4,10 @@ This repository is maintained using [projen](https://github.com/projen/projen).
 
 ## Local workflow
 
-1. Install dependencies with `npm install` once after cloning the repository.
-2. Use **Node.js 20 LTS**. Agents and human contributors follow the same steps.
-   If you use `nvm`, activate it with `nvm use 20`.
+1. Use **Node.js 20 LTS**. If you use `nvm`, activate it with `nvm use 20`.
+2. Install dependencies with `npm install` once after cloning.
+   This creates the `node_modules` directory so local `projen` and `jest` are available.
+   After installation `npm test` should run without prompts.
 3. After editing `.projenrc.ts` **always** run `npx projen` to refresh generated
    files before committing.
 4. Format all TypeScript and JSON files with `npx prettier --write`.
