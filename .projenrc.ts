@@ -45,8 +45,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '',
     '-',
   ],
-  minNodeVersion: '20.0.0',
-  workflowNodeVersion: '20.x',
+  minNodeVersion: '22.0.0',
+  workflowNodeVersion: '22.x',
   bundledDeps: [
     '@iarna/toml@2.2.5',
     '@types/aws-lambda@8.10.133',
@@ -90,7 +90,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
 project.jest?.addTestMatch('<rootDir>/test/**/*(*.)@(spec|test).ts?(x)');
 
-project.addDevDeps('@types/node@^20');
+project.addDevDeps('@types/node@^22');
 
 project.addGitIgnore('samples');
 project.addGitIgnore('/lambda');

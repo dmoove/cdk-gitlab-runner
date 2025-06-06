@@ -4,7 +4,7 @@ Deploy GitLab runners on AWS with AWS CDK.
 
 ## Prerequisites
 
-- Node.js 20 LTS
+- Node.js 22 LTS
 - AWS CDK v2
 
 ## Installation
@@ -48,12 +48,15 @@ runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
 
 ## Development
 
-Use [projen](https://github.com/projen/projen) to manage this repository. After changing
-`.projenrc.ts` run:
+Use [projen](https://github.com/projen/projen) to manage this repository.
+After cloning run `npm install` once to create `node_modules`.
+When you change `.projenrc.ts` run:
 
 ```bash
 npx projen
 ```
+
+Use Node.js 22 (for example with `nvm use 22`) before running commands.
 
 Run lint, tests and build before committing:
 
