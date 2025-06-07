@@ -48,20 +48,20 @@ runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
 
 ## Development
 
-Use [projen](https://github.com/projen/projen) to manage this repository.
 After cloning run `npm install` once to create `node_modules`.
-When you change `.projenrc.ts` run:
-
-```bash
-npx projen
-```
 
 Use Node.js 22 (for example with `nvm use 22`) before running commands.
 
-Run lint, tests and build before committing:
+Run format, lint, tests and build before committing:
 
 ```bash
-npm run eslint
+npm run format
+npm run lint
 npm test
 npm run build
 ```
+
+Use `npm run lint:fix` to automatically fix lint issues.
+Generate API docs with `npm run docgen` (uses Typedoc).
+Create a release entry using `npx changeset` and run `npm run version` to bump versions.
+Publishing is handled by GitHub Actions on merges to `main`.
