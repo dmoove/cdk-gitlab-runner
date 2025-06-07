@@ -4,18 +4,19 @@ This repository is maintained using [projen](https://github.com/projen/projen).
 
 ## Local workflow
 
-1. Run `npx projen` whenever you modified `.projenrc.ts` **or** after
+1. Install dependencies with `npm install` once after cloning.
+2. Run `npx projen` whenever you modified `.projenrc.ts` **or** after
    installing dependencies. This regenerates project files and prevents the CI
    job from reporting that files changed during build.
    If `npm run build` reports modified files, run `npx projen` again and commit
    the regenerated outputs.
-2. Format all TypeScript and JSON files with `npx prettier --write`.
-3. Lint with `npm run eslint` then run `npm test`.
+3. Format all TypeScript and JSON files with `npx prettier --write`.
+4. Lint with `npm run eslint` then run `npm test`.
    If tests do not start, ensure dependencies were installed and Node 22 is active.
    If Jest runs out of memory, prepend `NODE_OPTIONS=--max_old_space_size=4096`.
-4. Build the project using `npm run build`.
+5. Build the project using `npm run build`.
    The same `NODE_OPTIONS` flag can be used when memory errors occur.
-5. Commit changes using short present‑tense messages.
+6. Commit changes using short present‑tense messages.
 
 ## Generated files
 
@@ -30,7 +31,7 @@ Codex agents must modify `.projenrc.ts` if they want to change:
 
 ## Pull Requests
 
-Pull request titles must follow the pattern `type[scope]: description`.
+Pull request titles must follow the pattern `type(scope): description`.
 Allowed types are `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `build`,
 `ci`, `perf`, and `codex` for automated updates. Use a short scope such as
 `runner` or `docs` to clarify the area affected. Codex should use the `codex`
