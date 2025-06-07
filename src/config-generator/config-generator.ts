@@ -123,6 +123,11 @@ export class GitLabConfig implements IGitLabConfig {
     };
   }
 
+  /**
+   * Add a Docker executor configuration to the generated config.
+   *
+   * @param props - optional docker specific settings
+   */
   public addDockerExecutor(props?: ConfigDockerExecutor) {
     const runner = this.config.runners[0];
     runner.executor = GitlabExecutor.DOCKER;
@@ -142,6 +147,9 @@ export class GitLabConfig implements IGitLabConfig {
     });
   }
 
+  /**
+   * Merge additional environment variables into the runner configuration.
+   */
   private addEnvironments(envVariables: Record<string, string>) {
     const runner = this.config.runners[0];
 
@@ -155,6 +163,9 @@ export class GitLabConfig implements IGitLabConfig {
     });
   }
 
+  /**
+   * Enable S3 caching for the runner using the provided bucket.
+   */
   public addCache(scope: Construct, bucket: GitLabCacheBucket) {
     this.config.runners[0].cache = {
       Type: CacheType.S3,
@@ -166,6 +177,9 @@ export class GitLabConfig implements IGitLabConfig {
     };
   }
 
+  /**
+   * Render the configuration to a TOML string.
+   */
   public generateToml() {
     return toml.stringify(this.config);
   }
