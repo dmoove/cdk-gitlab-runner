@@ -3818,6 +3818,127 @@ The tree node.
 ---
 
 
+### PendingJobsCollector <a name="PendingJobsCollector" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector"></a>
+
+#### Initializers <a name="Initializers" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.Initializer"></a>
+
+```typescript
+import { PendingJobsCollector } from '@yanu23/cdk-gitlab-runner'
+
+new PendingJobsCollector(scope: Construct, id: string, props: PendingJobsCollectorProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.Initializer.parameter.props">props</a></code> | <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps">PendingJobsCollectorProps</a></code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps">PendingJobsCollectorProps</a>
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### ~~`isConstruct`~~ <a name="isConstruct" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.isConstruct"></a>
+
+```typescript
+import { PendingJobsCollector } from '@yanu23/cdk-gitlab-runner'
+
+PendingJobsCollector.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.property.function">function</a></code> | <code>aws-cdk-lib.aws_lambda.Function</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollector.property.metric">metric</a></code> | <code>aws-cdk-lib.aws_cloudwatch.Metric</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `function`<sup>Required</sup> <a name="function" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.property.function"></a>
+
+```typescript
+public readonly function: Function;
+```
+
+- *Type:* aws-cdk-lib.aws_lambda.Function
+
+---
+
+##### `metric`<sup>Required</sup> <a name="metric" id="@yanu23/cdk-gitlab-runner.PendingJobsCollector.property.metric"></a>
+
+```typescript
+public readonly metric: Metric;
+```
+
+- *Type:* aws-cdk-lib.aws_cloudwatch.Metric
+
+---
+
+
 ## Structs <a name="Structs" id="Structs"></a>
 
 ### AutoScalingConfig <a name="AutoScalingConfig" id="@yanu23/cdk-gitlab-runner.AutoScalingConfig"></a>
@@ -3837,6 +3958,7 @@ const autoScalingConfig: AutoScalingConfig = { ... }
 | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig.property.desiredCapacity">desiredCapacity</a></code> | <code>number</code> | *No description.* |
 | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig.property.maxCapacity">maxCapacity</a></code> | <code>number</code> | *No description.* |
 | <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig.property.minCapacity">minCapacity</a></code> | <code>number</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.AutoScalingConfig.property.pendingJobsTarget">pendingJobsTarget</a></code> | <code>number</code> | *No description.* |
 
 ---
 
@@ -3864,6 +3986,16 @@ public readonly maxCapacity: number;
 
 ```typescript
 public readonly minCapacity: number;
+```
+
+- *Type:* number
+
+---
+
+##### `pendingJobsTarget`<sup>Optional</sup> <a name="pendingJobsTarget" id="@yanu23/cdk-gitlab-runner.AutoScalingConfig.property.pendingJobsTarget"></a>
+
+```typescript
+public readonly pendingJobsTarget: number;
 ```
 
 - *Type:* number
@@ -5003,6 +5135,67 @@ public readonly gitlabUrl: string;
 - *Type:* string
 
 The gitlab url.
+
+---
+
+### PendingJobsCollectorProps <a name="PendingJobsCollectorProps" id="@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps"></a>
+
+#### Initializer <a name="Initializer" id="@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.Initializer"></a>
+
+```typescript
+import { PendingJobsCollectorProps } from '@yanu23/cdk-gitlab-runner'
+
+const pendingJobsCollectorProps: PendingJobsCollectorProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.gitlabUrl">gitlabUrl</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.secret">secret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.namespace">namespace</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.schedule">schedule</a></code> | <code>aws-cdk-lib.Duration</code> | *No description.* |
+
+---
+
+##### `gitlabUrl`<sup>Required</sup> <a name="gitlabUrl" id="@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.gitlabUrl"></a>
+
+```typescript
+public readonly gitlabUrl: string;
+```
+
+- *Type:* string
+
+---
+
+##### `secret`<sup>Required</sup> <a name="secret" id="@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.secret"></a>
+
+```typescript
+public readonly secret: ISecret;
+```
+
+- *Type:* aws-cdk-lib.aws_secretsmanager.ISecret
+
+---
+
+##### `namespace`<sup>Optional</sup> <a name="namespace" id="@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.namespace"></a>
+
+```typescript
+public readonly namespace: string;
+```
+
+- *Type:* string
+
+---
+
+##### `schedule`<sup>Optional</sup> <a name="schedule" id="@yanu23/cdk-gitlab-runner.PendingJobsCollectorProps.property.schedule"></a>
+
+```typescript
+public readonly schedule: Duration;
+```
+
+- *Type:* aws-cdk-lib.Duration
 
 ---
 
