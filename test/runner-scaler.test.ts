@@ -1,5 +1,5 @@
 import { App, Stack, Duration } from 'aws-cdk-lib';
-import { Template, Match } from 'aws-cdk-lib/assertions';
+import { Template } from 'aws-cdk-lib/assertions';
 import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { AmazonLinuxImage, InstanceType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Schedule } from 'aws-cdk-lib/aws-events';
