@@ -39,3 +39,11 @@ GitHub workflows execute `npx projen build` which performs linting, testing and 
 ## Documentation
 
 Public API docs are generated with `npm run docgen`. Update them whenever exports change.
+
+### Dynamic scaling
+
+The `RunnerScaler` construct controls the Auto Scaling Group size based on the GitLab job queue. If you change the scaling logic or add new scaling constructs:
+
+1. Update `README.md` with usage examples.
+2. Regenerate the API docs with `npm run docgen`.
+3. Run the tests and build steps before committing.
