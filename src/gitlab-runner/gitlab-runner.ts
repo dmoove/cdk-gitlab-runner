@@ -90,6 +90,12 @@ export interface DockerExecutorAttributes {
    */
   readonly tags?: string[];
   /**
+   * Target number of pending jobs per runner used for scaling.
+   *
+   * @default - disabled
+   */
+  readonly pendingJobsTarget?: number;
+  /**
    * The configuration of the Docker executor.
    */
   readonly configProp?: DockerExecutorConfigProps;
@@ -229,6 +235,7 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
       vpcConfig: props.vpcConfig,
       autoscalingConfig: props.autoscalingConfig,
       tags: props.tags,
+      pendingJobsTarget: props.pendingJobsTarget,
       tokenSecret: this.tokenSecret,
       gitlabUrl: this.gitlabUrl,
     });

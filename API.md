@@ -1219,6 +1219,8 @@ UserData for the instance.
 
 ### DrainFunction <a name="DrainFunction" id="@dmoove/cdk-gitlab-runner.DrainFunction"></a>
 
+Lambda function used by the drain state machine to pause and terminate a runner instance.
+
 #### Initializers <a name="Initializers" id="@dmoove/cdk-gitlab-runner.DrainFunction.Initializer"></a>
 
 ```typescript
@@ -2291,6 +2293,12 @@ The timeout configured for this lambda.
 
 - *Implements:* <a href="#@dmoove/cdk-gitlab-runner.IDrainStateMachine">IDrainStateMachine</a>
 
+Construct that provisions the resources required to gracefully drain and terminate runner instances.
+
+A Lambda function is invoked through a Step Functions state machine which is
+triggered by AutoScaling lifecycle hooks. The function pauses the runner and
+waits until no jobs are running before allowing the instance to terminate.
+
 #### Initializers <a name="Initializers" id="@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer"></a>
 
 ```typescript
@@ -2301,9 +2309,9 @@ new DrainStateMachine(scope: Construct, id: string, props: DrainStateMachineProp
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.props">props</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachineProps">DrainStateMachineProps</a></code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | - construct scope. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.id">id</a></code> | <code>string</code> | - id of the construct. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.props">props</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachineProps">DrainStateMachineProps</a></code> | - configuration for the drain behaviour. |
 
 ---
 
@@ -2311,17 +2319,23 @@ new DrainStateMachine(scope: Construct, id: string, props: DrainStateMachineProp
 
 - *Type:* constructs.Construct
 
+construct scope.
+
 ---
 
 ##### `id`<sup>Required</sup> <a name="id" id="@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.id"></a>
 
 - *Type:* string
 
+id of the construct.
+
 ---
 
 ##### `props`<sup>Required</sup> <a name="props" id="@dmoove/cdk-gitlab-runner.DrainStateMachine.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.DrainStateMachineProps">DrainStateMachineProps</a>
+
+configuration for the drain behaviour.
 
 ---
 
@@ -2372,8 +2386,8 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.property.drainFunction">drainFunction</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunction">DrainFunction</a></code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.property.stateMachine">stateMachine</a></code> | <code>aws-cdk-lib.aws_stepfunctions.IStateMachine</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.property.drainFunction">drainFunction</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunction">DrainFunction</a></code> | Lambda function responsible for draining the instance. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine.property.stateMachine">stateMachine</a></code> | <code>aws-cdk-lib.aws_stepfunctions.IStateMachine</code> | Step Functions state machine used for draining. |
 
 ---
 
@@ -2397,6 +2411,8 @@ public readonly drainFunction: DrainFunction;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.DrainFunction">DrainFunction</a>
 
+Lambda function responsible for draining the instance.
+
 ---
 
 ##### `stateMachine`<sup>Required</sup> <a name="stateMachine" id="@dmoove/cdk-gitlab-runner.DrainStateMachine.property.stateMachine"></a>
@@ -2407,10 +2423,14 @@ public readonly stateMachine: IStateMachine;
 
 - *Type:* aws-cdk-lib.aws_stepfunctions.IStateMachine
 
+Step Functions state machine used for draining.
+
 ---
 
 
 ### GitLabCacheBucket <a name="GitLabCacheBucket" id="@dmoove/cdk-gitlab-runner.GitLabCacheBucket"></a>
+
+S3 bucket used by the runners to store job cache.
 
 #### Initializers <a name="Initializers" id="@dmoove/cdk-gitlab-runner.GitLabCacheBucket.Initializer"></a>
 
@@ -3537,6 +3557,12 @@ first call to addToResourcePolicy(s).
 
 - *Implements:* <a href="#@dmoove/cdk-gitlab-runner.IGitLabRunner">IGitLabRunner</a>
 
+CDK construct that configures a GitLab runner.
+
+The construct manages the base runner configuration and allows adding
+Docker executors and optional caching. The resulting configuration is
+stored in {@link glConfig} and used by the executor constructs.
+
 #### Initializers <a name="Initializers" id="@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer"></a>
 
 ```typescript
@@ -3547,9 +3573,9 @@ new GitLabRunner(scope: Construct, id: string, props: GitLabRunnerProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.props">props</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunnerProps">GitLabRunnerProps</a></code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | - construct scope. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.id">id</a></code> | <code>string</code> | - id of the construct. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.props">props</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabRunnerProps">GitLabRunnerProps</a></code> | - runner configuration properties. |
 
 ---
 
@@ -3557,17 +3583,23 @@ new GitLabRunner(scope: Construct, id: string, props: GitLabRunnerProps)
 
 - *Type:* constructs.Construct
 
+construct scope.
+
 ---
 
 ##### `id`<sup>Required</sup> <a name="id" id="@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.id"></a>
 
 - *Type:* string
 
+id of the construct.
+
 ---
 
 ##### `props`<sup>Required</sup> <a name="props" id="@dmoove/cdk-gitlab-runner.GitLabRunner.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.GitLabRunnerProps">GitLabRunnerProps</a>
+
+runner configuration properties.
 
 ---
 
@@ -3847,6 +3879,116 @@ The tree node.
 ---
 
 
+### PendingJobsMetric <a name="PendingJobsMetric" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric"></a>
+
+#### Initializers <a name="Initializers" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.Initializer"></a>
+
+```typescript
+import { PendingJobsMetric } from '@dmoove/cdk-gitlab-runner'
+
+new PendingJobsMetric(scope: Construct, id: string, props: PendingJobsMetricProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetric.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetric.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetric.Initializer.parameter.props">props</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetricProps">PendingJobsMetricProps</a></code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetricProps">PendingJobsMetricProps</a>
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetric.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetric.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### ~~`isConstruct`~~ <a name="isConstruct" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.isConstruct"></a>
+
+```typescript
+import { PendingJobsMetric } from '@dmoove/cdk-gitlab-runner'
+
+PendingJobsMetric.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetric.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetric.property.metric">metric</a></code> | <code>aws-cdk-lib.aws_cloudwatch.Metric</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `metric`<sup>Required</sup> <a name="metric" id="@dmoove/cdk-gitlab-runner.PendingJobsMetric.property.metric"></a>
+
+```typescript
+public readonly metric: Metric;
+```
+
+- *Type:* aws-cdk-lib.aws_cloudwatch.Metric
+
+---
+
+
 ## Structs <a name="Structs" id="Structs"></a>
 
 ### AutoScalingConfig <a name="AutoScalingConfig" id="@dmoove/cdk-gitlab-runner.AutoScalingConfig"></a>
@@ -3913,14 +4055,15 @@ const baseDockerExecutorProps: BaseDockerExecutorProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.tags">tags</a></code> | <code>string[]</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | Generated GitLab runner configuration. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.tags">tags</a></code> | <code>string[]</code> | Optional tags applied to created resources. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.gitlabUrl">gitlabUrl</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.pendingJobsTarget">pendingJobsTarget</a></code> | <code>number</code> | Target number of pending jobs per runner used for scaling. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.volumeSize">volumeSize</a></code> | <code>number</code> | Size of the root EBS volume in GiB. |
 
 ---
@@ -3933,6 +4076,8 @@ public readonly config: GitLabConfig;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a>
 
+Generated GitLab runner configuration.
+
 ---
 
 ##### `tags`<sup>Optional</sup> <a name="tags" id="@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.tags"></a>
@@ -3942,6 +4087,8 @@ public readonly tags: string[];
 ```
 
 - *Type:* string[]
+
+Optional tags applied to created resources.
 
 ---
 
@@ -4012,6 +4159,19 @@ public readonly autoscalingConfig: AutoScalingConfig;
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a>
 
 The autoscaling config.
+
+---
+
+##### `pendingJobsTarget`<sup>Optional</sup> <a name="pendingJobsTarget" id="@dmoove/cdk-gitlab-runner.BaseDockerExecutorProps.property.pendingJobsTarget"></a>
+
+```typescript
+public readonly pendingJobsTarget: number;
+```
+
+- *Type:* number
+- *Default:* disabled
+
+Target number of pending jobs per runner used for scaling.
 
 ---
 
@@ -4192,6 +4352,7 @@ const dockerExecutorAttributes: DockerExecutorAttributes = { ... }
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAttributes.property.vpcConfig">vpcConfig</a></code> | <code>aws-cdk-lib.aws_stepfunctions_tasks.VpcConfig</code> | The VPC configuration of the GitLab Runner. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAttributes.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling configuration of the GitLab Runner. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAttributes.property.configProp">configProp</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorConfigProps">DockerExecutorConfigProps</a></code> | The configuration of the Docker executor. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAttributes.property.pendingJobsTarget">pendingJobsTarget</a></code> | <code>number</code> | Target number of pending jobs per runner used for scaling. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAttributes.property.tags">tags</a></code> | <code>string[]</code> | The tags of the GitLab Runner. |
 
 ---
@@ -4256,6 +4417,19 @@ The configuration of the Docker executor.
 
 ---
 
+##### `pendingJobsTarget`<sup>Optional</sup> <a name="pendingJobsTarget" id="@dmoove/cdk-gitlab-runner.DockerExecutorAttributes.property.pendingJobsTarget"></a>
+
+```typescript
+public readonly pendingJobsTarget: number;
+```
+
+- *Type:* number
+- *Default:* disabled
+
+Target number of pending jobs per runner used for scaling.
+
+---
+
 ##### `tags`<sup>Optional</sup> <a name="tags" id="@dmoove/cdk-gitlab-runner.DockerExecutorAttributes.property.tags"></a>
 
 ```typescript
@@ -4282,14 +4456,15 @@ const dockerExecutorAutoscalingProps: DockerExecutorAutoscalingProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.tags">tags</a></code> | <code>string[]</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | Generated GitLab runner configuration. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.tags">tags</a></code> | <code>string[]</code> | Optional tags applied to created resources. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.gitlabUrl">gitlabUrl</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.pendingJobsTarget">pendingJobsTarget</a></code> | <code>number</code> | Target number of pending jobs per runner used for scaling. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.volumeSize">volumeSize</a></code> | <code>number</code> | Size of the root EBS volume in GiB. |
 
 ---
@@ -4302,6 +4477,8 @@ public readonly config: GitLabConfig;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a>
 
+Generated GitLab runner configuration.
+
 ---
 
 ##### `tags`<sup>Optional</sup> <a name="tags" id="@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.tags"></a>
@@ -4311,6 +4488,8 @@ public readonly tags: string[];
 ```
 
 - *Type:* string[]
+
+Optional tags applied to created resources.
 
 ---
 
@@ -4381,6 +4560,19 @@ public readonly autoscalingConfig: AutoScalingConfig;
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a>
 
 The autoscaling config.
+
+---
+
+##### `pendingJobsTarget`<sup>Optional</sup> <a name="pendingJobsTarget" id="@dmoove/cdk-gitlab-runner.DockerExecutorAutoscalingProps.property.pendingJobsTarget"></a>
+
+```typescript
+public readonly pendingJobsTarget: number;
+```
+
+- *Type:* number
+- *Default:* disabled
+
+Target number of pending jobs per runner used for scaling.
 
 ---
 
@@ -4484,14 +4676,15 @@ const dockerExecutorInstanceProps: DockerExecutorInstanceProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.tags">tags</a></code> | <code>string[]</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | Generated GitLab runner configuration. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.tags">tags</a></code> | <code>string[]</code> | Optional tags applied to created resources. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.gitlabUrl">gitlabUrl</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.pendingJobsTarget">pendingJobsTarget</a></code> | <code>number</code> | Target number of pending jobs per runner used for scaling. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.volumeSize">volumeSize</a></code> | <code>number</code> | Size of the root EBS volume in GiB. |
 
 ---
@@ -4504,6 +4697,8 @@ public readonly config: GitLabConfig;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a>
 
+Generated GitLab runner configuration.
+
 ---
 
 ##### `tags`<sup>Optional</sup> <a name="tags" id="@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.tags"></a>
@@ -4513,6 +4708,8 @@ public readonly tags: string[];
 ```
 
 - *Type:* string[]
+
+Optional tags applied to created resources.
 
 ---
 
@@ -4586,6 +4783,19 @@ The autoscaling config.
 
 ---
 
+##### `pendingJobsTarget`<sup>Optional</sup> <a name="pendingJobsTarget" id="@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.pendingJobsTarget"></a>
+
+```typescript
+public readonly pendingJobsTarget: number;
+```
+
+- *Type:* number
+- *Default:* disabled
+
+Target number of pending jobs per runner used for scaling.
+
+---
+
 ##### `volumeSize`<sup>Optional</sup> <a name="volumeSize" id="@dmoove/cdk-gitlab-runner.DockerExecutorInstanceProps.property.volumeSize"></a>
 
 ```typescript
@@ -4613,14 +4823,15 @@ const dockerExecutorProps: DockerExecutorProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.tags">tags</a></code> | <code>string[]</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | Generated GitLab runner configuration. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.tags">tags</a></code> | <code>string[]</code> | Optional tags applied to created resources. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.gitlabUrl">gitlabUrl</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.instanceType">instanceType</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType</code> | The Instance Type used by the docker executor. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.machineImage">machineImage</a></code> | <code>aws-cdk-lib.aws_ec2.IMachineImage</code> | The AMI used by the runner. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.tokenSecret">tokenSecret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | The GitLab authentification token secret. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.vpcConfig">vpcConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.VpcConfig">VpcConfig</a></code> | The VPC where the runner should run. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.autoscalingConfig">autoscalingConfig</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.AutoScalingConfig">AutoScalingConfig</a></code> | The autoscaling config. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.pendingJobsTarget">pendingJobsTarget</a></code> | <code>number</code> | Target number of pending jobs per runner used for scaling. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.volumeSize">volumeSize</a></code> | <code>number</code> | Size of the root EBS volume in GiB. |
 | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.dockerExecutorType">dockerExecutorType</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DockerExecutorType">DockerExecutorType</a></code> | Choose the docker executor type. |
 
@@ -4634,6 +4845,8 @@ public readonly config: GitLabConfig;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a>
 
+Generated GitLab runner configuration.
+
 ---
 
 ##### `tags`<sup>Optional</sup> <a name="tags" id="@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.tags"></a>
@@ -4643,6 +4856,8 @@ public readonly tags: string[];
 ```
 
 - *Type:* string[]
+
+Optional tags applied to created resources.
 
 ---
 
@@ -4716,6 +4931,19 @@ The autoscaling config.
 
 ---
 
+##### `pendingJobsTarget`<sup>Optional</sup> <a name="pendingJobsTarget" id="@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.pendingJobsTarget"></a>
+
+```typescript
+public readonly pendingJobsTarget: number;
+```
+
+- *Type:* number
+- *Default:* disabled
+
+Target number of pending jobs per runner used for scaling.
+
+---
+
 ##### `volumeSize`<sup>Optional</sup> <a name="volumeSize" id="@dmoove/cdk-gitlab-runner.DockerExecutorProps.property.volumeSize"></a>
 
 ```typescript
@@ -4743,6 +4971,8 @@ Choose the docker executor type.
 
 ### DrainFunctionProps <a name="DrainFunctionProps" id="@dmoove/cdk-gitlab-runner.DrainFunctionProps"></a>
 
+Properties for configuring the {@link DrainFunction}.
+
 #### Initializer <a name="Initializer" id="@dmoove/cdk-gitlab-runner.DrainFunctionProps.Initializer"></a>
 
 ```typescript
@@ -4755,9 +4985,9 @@ const drainFunctionProps: DrainFunctionProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps.property.autoScalingGroup">autoScalingGroup</a></code> | <code>aws-cdk-lib.aws_autoscaling.IAutoScalingGroup</code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps.property.gitEndpoint">gitEndpoint</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps.property.secret">secret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps.property.autoScalingGroup">autoScalingGroup</a></code> | <code>aws-cdk-lib.aws_autoscaling.IAutoScalingGroup</code> | AutoScaling group in which the runner instance lives. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps.property.gitEndpoint">gitEndpoint</a></code> | <code>string</code> | URL of the GitLab instance. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps.property.secret">secret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | Secret containing the runner authentication token. |
 
 ---
 
@@ -4769,6 +4999,8 @@ public readonly autoScalingGroup: IAutoScalingGroup;
 
 - *Type:* aws-cdk-lib.aws_autoscaling.IAutoScalingGroup
 
+AutoScaling group in which the runner instance lives.
+
 ---
 
 ##### `gitEndpoint`<sup>Required</sup> <a name="gitEndpoint" id="@dmoove/cdk-gitlab-runner.DrainFunctionProps.property.gitEndpoint"></a>
@@ -4778,6 +5010,8 @@ public readonly gitEndpoint: string;
 ```
 
 - *Type:* string
+
+URL of the GitLab instance.
 
 ---
 
@@ -4789,9 +5023,13 @@ public readonly secret: ISecret;
 
 - *Type:* aws-cdk-lib.aws_secretsmanager.ISecret
 
+Secret containing the runner authentication token.
+
 ---
 
 ### DrainStateMachineProps <a name="DrainStateMachineProps" id="@dmoove/cdk-gitlab-runner.DrainStateMachineProps"></a>
+
+Properties for {@link DrainStateMachine}.
 
 #### Initializer <a name="Initializer" id="@dmoove/cdk-gitlab-runner.DrainStateMachineProps.Initializer"></a>
 
@@ -4805,8 +5043,8 @@ const drainStateMachineProps: DrainStateMachineProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachineProps.property.autoScalingGroup">autoScalingGroup</a></code> | <code>aws-cdk-lib.aws_autoscaling.IAutoScalingGroup</code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachineProps.property.functionProps">functionProps</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps">DrainFunctionProps</a></code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachineProps.property.autoScalingGroup">autoScalingGroup</a></code> | <code>aws-cdk-lib.aws_autoscaling.IAutoScalingGroup</code> | AutoScaling group that hosts the runner instances. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.DrainStateMachineProps.property.functionProps">functionProps</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps">DrainFunctionProps</a></code> | Configuration for the underlying {@link DrainFunction}. |
 
 ---
 
@@ -4818,6 +5056,8 @@ public readonly autoScalingGroup: IAutoScalingGroup;
 
 - *Type:* aws-cdk-lib.aws_autoscaling.IAutoScalingGroup
 
+AutoScaling group that hosts the runner instances.
+
 ---
 
 ##### `functionProps`<sup>Required</sup> <a name="functionProps" id="@dmoove/cdk-gitlab-runner.DrainStateMachineProps.property.functionProps"></a>
@@ -4828,9 +5068,13 @@ public readonly functionProps: DrainFunctionProps;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.DrainFunctionProps">DrainFunctionProps</a>
 
+Configuration for the underlying {@link DrainFunction}.
+
 ---
 
 ### ExecutorProps <a name="ExecutorProps" id="@dmoove/cdk-gitlab-runner.ExecutorProps"></a>
+
+Common properties used by the executor implementations.
 
 #### Initializer <a name="Initializer" id="@dmoove/cdk-gitlab-runner.ExecutorProps.Initializer"></a>
 
@@ -4844,8 +5088,8 @@ const executorProps: ExecutorProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.ExecutorProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.ExecutorProps.property.tags">tags</a></code> | <code>string[]</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.ExecutorProps.property.config">config</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a></code> | Generated GitLab runner configuration. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.ExecutorProps.property.tags">tags</a></code> | <code>string[]</code> | Optional tags applied to created resources. |
 
 ---
 
@@ -4857,6 +5101,8 @@ public readonly config: GitLabConfig;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.GitLabConfig">GitLabConfig</a>
 
+Generated GitLab runner configuration.
+
 ---
 
 ##### `tags`<sup>Optional</sup> <a name="tags" id="@dmoove/cdk-gitlab-runner.ExecutorProps.property.tags"></a>
@@ -4866,6 +5112,8 @@ public readonly tags: string[];
 ```
 
 - *Type:* string[]
+
+Optional tags applied to created resources.
 
 ---
 
@@ -5091,6 +5339,45 @@ The gitlab url.
 
 ---
 
+### PendingJobsMetricProps <a name="PendingJobsMetricProps" id="@dmoove/cdk-gitlab-runner.PendingJobsMetricProps"></a>
+
+#### Initializer <a name="Initializer" id="@dmoove/cdk-gitlab-runner.PendingJobsMetricProps.Initializer"></a>
+
+```typescript
+import { PendingJobsMetricProps } from '@dmoove/cdk-gitlab-runner'
+
+const pendingJobsMetricProps: PendingJobsMetricProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetricProps.property.gitlabUrl">gitlabUrl</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.PendingJobsMetricProps.property.secret">secret</a></code> | <code>aws-cdk-lib.aws_secretsmanager.ISecret</code> | *No description.* |
+
+---
+
+##### `gitlabUrl`<sup>Required</sup> <a name="gitlabUrl" id="@dmoove/cdk-gitlab-runner.PendingJobsMetricProps.property.gitlabUrl"></a>
+
+```typescript
+public readonly gitlabUrl: string;
+```
+
+- *Type:* string
+
+---
+
+##### `secret`<sup>Required</sup> <a name="secret" id="@dmoove/cdk-gitlab-runner.PendingJobsMetricProps.property.secret"></a>
+
+```typescript
+public readonly secret: ISecret;
+```
+
+- *Type:* aws-cdk-lib.aws_secretsmanager.ISecret
+
+---
+
 ### RunnerConfig <a name="RunnerConfig" id="@dmoove/cdk-gitlab-runner.RunnerConfig"></a>
 
 #### Initializer <a name="Initializer" id="@dmoove/cdk-gitlab-runner.RunnerConfig.Initializer"></a>
@@ -5220,9 +5507,9 @@ new GitLabConfig(props: GlConfigGeneratorProps)
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig.addCache">addCache</a></code> | Adds a cache to the configuration. |
-| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig.addDockerExecutor">addDockerExecutor</a></code> | Adds an executor to the configuration. |
-| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig.generateToml">generateToml</a></code> | Generates the GitLab configuration as a TOML string. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig.addCache">addCache</a></code> | Enable S3 caching for the runner using the provided bucket. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig.addDockerExecutor">addDockerExecutor</a></code> | Add a Docker executor configuration to the generated config. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.GitLabConfig.generateToml">generateToml</a></code> | Render the configuration to a TOML string. |
 
 ---
 
@@ -5232,7 +5519,7 @@ new GitLabConfig(props: GlConfigGeneratorProps)
 public addCache(scope: Construct, bucket: GitLabCacheBucket): void
 ```
 
-Adds a cache to the configuration.
+Enable S3 caching for the runner using the provided bucket.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="@dmoove/cdk-gitlab-runner.GitLabConfig.addCache.parameter.scope"></a>
 
@@ -5252,11 +5539,13 @@ Adds a cache to the configuration.
 public addDockerExecutor(props?: ConfigDockerExecutor): void
 ```
 
-Adds an executor to the configuration.
+Add a Docker executor configuration to the generated config.
 
 ###### `props`<sup>Optional</sup> <a name="props" id="@dmoove/cdk-gitlab-runner.GitLabConfig.addDockerExecutor.parameter.props"></a>
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.ConfigDockerExecutor">ConfigDockerExecutor</a>
+
+optional docker specific settings.
 
 ---
 
@@ -5266,7 +5555,7 @@ Adds an executor to the configuration.
 public generateToml(): string
 ```
 
-Generates the GitLab configuration as a TOML string.
+Render the configuration to a TOML string.
 
 
 
@@ -5319,13 +5608,15 @@ public readonly executor: Instance | AutoScalingGroup;
 
 - *Implemented By:* <a href="#@dmoove/cdk-gitlab-runner.DrainStateMachine">DrainStateMachine</a>, <a href="#@dmoove/cdk-gitlab-runner.IDrainStateMachine">IDrainStateMachine</a>
 
+Exposed interface of a drain state machine construct.
+
 
 #### Properties <a name="Properties" id="Properties"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.IDrainStateMachine.property.drainFunction">drainFunction</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunction">DrainFunction</a></code> | *No description.* |
-| <code><a href="#@dmoove/cdk-gitlab-runner.IDrainStateMachine.property.stateMachine">stateMachine</a></code> | <code>aws-cdk-lib.aws_stepfunctions.IStateMachine</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.IDrainStateMachine.property.drainFunction">drainFunction</a></code> | <code><a href="#@dmoove/cdk-gitlab-runner.DrainFunction">DrainFunction</a></code> | Lambda function responsible for draining the instance. |
+| <code><a href="#@dmoove/cdk-gitlab-runner.IDrainStateMachine.property.stateMachine">stateMachine</a></code> | <code>aws-cdk-lib.aws_stepfunctions.IStateMachine</code> | Step Functions state machine used for draining. |
 
 ---
 
@@ -5337,6 +5628,8 @@ public readonly drainFunction: DrainFunction;
 
 - *Type:* <a href="#@dmoove/cdk-gitlab-runner.DrainFunction">DrainFunction</a>
 
+Lambda function responsible for draining the instance.
+
 ---
 
 ##### `stateMachine`<sup>Required</sup> <a name="stateMachine" id="@dmoove/cdk-gitlab-runner.IDrainStateMachine.property.stateMachine"></a>
@@ -5347,18 +5640,22 @@ public readonly stateMachine: IStateMachine;
 
 - *Type:* aws-cdk-lib.aws_stepfunctions.IStateMachine
 
+Step Functions state machine used for draining.
+
 ---
 
 ### IExecutor <a name="IExecutor" id="@dmoove/cdk-gitlab-runner.IExecutor"></a>
 
 - *Implemented By:* <a href="#@dmoove/cdk-gitlab-runner.IExecutor">IExecutor</a>
 
+Interface implemented by all executor constructs.
+
 
 #### Properties <a name="Properties" id="Properties"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#@dmoove/cdk-gitlab-runner.IExecutor.property.executor">executor</a></code> | <code>aws-cdk-lib.aws_ec2.Instance \| aws-cdk-lib.aws_autoscaling.AutoScalingGroup</code> | *No description.* |
+| <code><a href="#@dmoove/cdk-gitlab-runner.IExecutor.property.executor">executor</a></code> | <code>aws-cdk-lib.aws_ec2.Instance \| aws-cdk-lib.aws_autoscaling.AutoScalingGroup</code> | Underlying compute resource used by the executor. |
 
 ---
 
@@ -5369,6 +5666,8 @@ public readonly executor: Instance | AutoScalingGroup;
 ```
 
 - *Type:* aws-cdk-lib.aws_ec2.Instance | aws-cdk-lib.aws_autoscaling.AutoScalingGroup
+
+Underlying compute resource used by the executor.
 
 ---
 
