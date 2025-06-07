@@ -52,6 +52,29 @@ describe('DockerExecutor', () => {
     });
   });
 
+  test('adds pending job scaling when target is provided', () => {
+    new DockerExecutor(stack, 'DockerExecutorASGScale', {
+      dockerExecutorType: DockerExecutorType.AUTOSCALING,
+      autoscalingConfig: {
+        minCapacity: 1,
+        maxCapacity: 3,
+        desiredCapacity: 2,
+        pendingJobsTarget: 2,
+      },
+      instanceType: new InstanceType('t3.micro'),
+      machineImage: MachineImage.latestAmazonLinux2023(),
+      vpcConfig: { vpc },
+      tokenSecret,
+      gitlabUrl: 'https://gitlab.com',
+      config,
+    });
+
+    template = Template.fromStack(stack);
+
+    template.resourceCountIs('AWS::Lambda::Function', 2);
+    template.resourceCountIs('AWS::Events::Rule', 2);
+  });
+
   test('creates single instance executor when specified', () => {
     new DockerExecutor(stack, 'DockerExecutorInstance', {
       dockerExecutorType: DockerExecutorType.SINGLE_INSTANCE,

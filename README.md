@@ -34,3 +34,6 @@ runner.addDockerExecutor(DockerExecutorType.SINGLE_INSTANCE, {
   vpc,
 });
 ```
+
+## Autoscaling on pending jobs
+Provide `pendingJobsTarget` in `autoscalingConfig` to automatically scale runners based on the ratio of pending jobs per running instance.

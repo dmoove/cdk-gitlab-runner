@@ -4,10 +4,12 @@ import {
   Signals,
   UpdatePolicy,
 } from 'aws-cdk-lib/aws-autoscaling';
+import { MathExpression, Metric } from 'aws-cdk-lib/aws-cloudwatch';
 import { Construct } from 'constructs';
 import { GlCfnInit } from './cfn-init';
 import { BaseDockerExecutorProps } from './docker-executor';
 import { DrainStateMachine } from '../../drain-runner';
+import { PendingJobsCollector } from '../../pending-jobs';
 
 export interface DockerExecutorAutoscalingProps
   extends BaseDockerExecutorProps {}
@@ -66,5 +68,33 @@ export class DockerExecutorAutoscaling extends AutoScalingGroup {
         autoScalingGroup: this,
       },
     });
+
+    if (props.autoscalingConfig?.pendingJobsTarget) {
+      const collector = new PendingJobsCollector(this, 'PendingJobsCollector', {
+        secret: props.tokenSecret,
+        gitlabUrl: props.gitlabUrl,
+      });
+
+      const ratioMetric = new MathExpression({
+        expression: 'm1/m2',
+        usingMetrics: {
+          m1: collector.metric,
+          m2: new Metric({
+            namespace: 'AWS/AutoScaling',
+            metricName: 'GroupInServiceInstances',
+            dimensionsMap: { AutoScalingGroupName: this.autoScalingGroupName },
+          }),
+        },
+        period: Duration.minutes(1),
+      });
+
+      this.scaleOnMetric('PendingJobsScaling', {
+        metric: ratioMetric,
+        scalingSteps: [
+          { upper: props.autoscalingConfig.pendingJobsTarget / 2, change: -1 },
+          { lower: props.autoscalingConfig.pendingJobsTarget, change: +1 },
+        ],
+      });
+    }
   }
 }

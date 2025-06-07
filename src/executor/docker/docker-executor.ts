@@ -60,6 +60,7 @@ export interface AutoScalingConfig {
   readonly minCapacity: number;
   readonly maxCapacity: number;
   readonly desiredCapacity: number;
+  readonly pendingJobsTarget?: number;
 }
 
 export interface IDockerExecutor {

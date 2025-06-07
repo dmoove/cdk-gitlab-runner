@@ -63,6 +63,9 @@ if (preCompileTask) {
   preCompileTask.exec(
     `esbuild ${commonOptions} src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js`,
   );
+  preCompileTask.exec(
+    `esbuild ${commonOptions} src/pending-jobs/lambda/pending-jobs.function.ts --outfile=lambda/pending-jobs/index.js`,
+  );
 }
 
 project.synth();
