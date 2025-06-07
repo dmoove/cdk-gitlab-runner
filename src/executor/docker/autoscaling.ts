@@ -12,6 +12,7 @@ import {
   setupCfnInit,
 } from './docker-executor';
 import { DrainStateMachine } from '../../drain-runner';
+import { PendingJobsMetric } from '../../pending-jobs';
 
 export interface DockerExecutorAutoscalingProps
   extends BaseDockerExecutorProps {}
@@ -92,5 +93,17 @@ export class DockerExecutorAutoscaling extends AutoScalingGroup {
         autoScalingGroup: this,
       },
     });
+
+    if (props.pendingJobsTarget !== undefined) {
+      const metric = new PendingJobsMetric(this, 'PendingJobsMetric', {
+        gitlabUrl: props.gitlabUrl,
+        secret: props.tokenSecret,
+      }).metric;
+
+      this.scaleToTrackMetric('PendingJobsScaling', {
+        metric,
+        targetValue: props.pendingJobsTarget,
+      });
+    }
   }
 }

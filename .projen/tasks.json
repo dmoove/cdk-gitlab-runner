@@ -177,6 +177,9 @@
       "steps": [
         {
           "exec": "esbuild --bundle --external:aws-sdk --platform=node src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js"
+        },
+        {
+          "exec": "esbuild --bundle --external:aws-sdk --platform=node src/pending-jobs/lambda/pending-jobs.function.ts --outfile=lambda/pending-jobs/index.js"
         }
       ]
     },
@@ -208,6 +211,9 @@
     "test": {
       "name": "test",
       "description": "Run tests",
+      "env": {
+        "NODE_OPTIONS": "--max_old_space_size=4096"
+      },
       "steps": [
         {
           "spawn": "pre-compile"

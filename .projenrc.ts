@@ -101,11 +101,15 @@ if (preCompileTask) {
   preCompileTask.exec(
     `esbuild ${commonOptions} src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js`,
   );
+  preCompileTask.exec(
+    `esbuild ${commonOptions} src/pending-jobs/lambda/pending-jobs.function.ts --outfile=lambda/pending-jobs/index.js`,
+  );
 }
 
 const testTask = project.tasks.tryFind('test');
 if (testTask && preCompileTask) {
   testTask.prependSpawn(preCompileTask);
+  testTask.env('NODE_OPTIONS', '--max_old_space_size=4096');
 }
 
 project.synth();

@@ -49,6 +49,13 @@ export interface BaseDockerExecutorProps extends ExecutorProps {
   readonly gitlabUrl: string;
 
   /**
+   * Target number of pending jobs per runner used for scaling.
+   *
+   * @default - disabled
+   */
+  readonly pendingJobsTarget?: number;
+
+  /**
    * Size of the root EBS volume in GiB.
    *
    * @default 80
@@ -152,6 +159,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
           vpcConfig: props.vpcConfig,
           tokenSecret: props.tokenSecret,
           gitlabUrl: props.gitlabUrl,
+          pendingJobsTarget: props.pendingJobsTarget,
         });
       case DockerExecutorType.SINGLE_INSTANCE:
         return new DockerExecutorInstance(scope, id, {
