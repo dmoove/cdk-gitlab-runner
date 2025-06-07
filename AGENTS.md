@@ -1,33 +1,23 @@
 # Contributor Guide
 
-This repository is maintained using [projen](https://github.com/projen/projen).
+This repository is managed manually without [projen](https://github.com/projen/projen).
 
 ## Local workflow
 
 1. Install dependencies with `npm install` once after cloning.
-2. Run `npx projen` whenever you modified `.projenrc.ts` **or** after
-   installing dependencies. This regenerates project files and prevents the CI
-   job from reporting that files changed during build.
-   If `npm run build` reports modified files, run `npx projen` again and commit
-   the regenerated outputs.
-3. Format all TypeScript and JSON files with `npx prettier --write`.
-4. Lint with `npm run eslint` then run `npm test`.
+   CI uses `npm ci` to ensure a clean install.
+2. Format all TypeScript and JSON files with `npx prettier --write`.
+3. Lint with `npm run lint` then run `npm test`.
+   Test execution can take a couple minutes.
    If tests do not start, ensure dependencies were installed and Node 22 is active.
    If Jest runs out of memory, prepend `NODE_OPTIONS=--max_old_space_size=4096`.
-5. Build the project using `npm run build`.
+4. Build the project using `npm run build`.
    The same `NODE_OPTIONS` flag can be used when memory errors occur.
-6. Commit changes using short present‑tense messages.
+5. Commit changes using short present‑tense messages.
 
 ## Generated files
 
-Do not edit generated files directly.
-
-Codex agents must modify `.projenrc.ts` if they want to change:
-
-- GitHub templates
-- Lint configs
-- CI workflows
-- Package scripts
+Do not edit files in `lib/` or `dist/` directly. Rebuild them using the project tasks.
 
 ## Pull Requests
 
@@ -41,7 +31,7 @@ fill out the summary and testing sections of the template.
 
 ## CI
 
-GitHub workflows execute `npx projen build` which performs linting, testing and compilation. Ensure the local steps above succeed before pushing.
+GitHub workflows install dependencies with `npm ci` and execute `npm run build` which performs linting, testing and compilation. Ensure the local steps above succeed before pushing.
 
 ## Documentation
 
