@@ -45,7 +45,9 @@
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.0",
     "typedoc-plugin-markdown": "^3.14.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/aws-lambda": "8.10.133",
+    "esbuild": "0.20.0"
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.126.0",
@@ -53,16 +55,12 @@
   },
   "dependencies": {
     "@iarna/toml": "2.2.5",
-    "@types/aws-lambda": "8.10.133",
     "aws-sdk": "2.1555.0",
-    "esbuild": "0.20.0",
     "gitlab": "14.2.2"
   },
   "bundledDependencies": [
     "@iarna/toml",
-    "@types/aws-lambda",
     "aws-sdk",
-    "esbuild",
     "gitlab"
   ],
   "keywords": [
