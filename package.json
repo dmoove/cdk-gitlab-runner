@@ -7,7 +7,7 @@
   "scripts": {
     "pre-compile": "esbuild --bundle --external:aws-sdk --platform=node src/drain-runner/lambda/drain.function.ts --outfile=lambda/index.js && esbuild --bundle --external:aws-sdk --platform=node src/pending-metric/lambda/pending-jobs.function.ts --outfile=lambda/pending-jobs.js",
     "compile": "tsc -p tsconfig.json",
-    "docgen": "typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts && cp docs/README.md API.md && rimraf docs",
+    "docgen": "typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts && sed 's](modules.md)](docs/modules.md)]' docs/README.md > API.md",
     "docs": "typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts",
     "lint": "eslint --ext .ts src test",
     "lint:fix": "eslint --ext .ts src test --fix",
