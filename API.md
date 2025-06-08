@@ -1,4 +1,4 @@
-@dmoove/cdk-gitlab-runner / [Exports](modules.md)
+@dmoove/cdk-gitlab-runner / [Exports](docs/modules.md)
 
 # @yanu23/cdk-gitlab-runner
 
