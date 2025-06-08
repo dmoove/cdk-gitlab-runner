@@ -15,6 +15,7 @@
     "clean": "rimraf lib dist coverage lambda",
     "version": "changeset version",
     "release": "changeset publish",
+    "release:ci": "npm run build && npm run release",
     "test": "npm run pre-compile && jest --runInBand --ci --detectOpenHandles --passWithNoTests --coverageProvider=v8 --updateSnapshot && npm run lint",
     "build": "npm run compile && npm test"
   },
