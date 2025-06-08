@@ -1,6 +1,9 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@2.3.1/schema.json",
-  "changelog": ["@changesets/changelog-github", {"repo": "dmoove/cdk-gitlab-runner"}],
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "dmoove/cdk-gitlab-runner" }
+  ],
   "commit": "chore(release): version packages",
   "linked": [],
   "access": "public",
