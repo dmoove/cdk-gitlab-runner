@@ -1,4 +1,3 @@
-
 name: auto-approve
 on:
   pull_request_target:
@@ -13,8 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      contents: write
     if: contains(github.event.pull_request.labels.*.name, 'auto-approve') && (github.event.pull_request.user.login == 'github-actions' || github.event.pull_request.user.login == 'github-actions[bot]' || github.event.pull_request.user.login == 'dependabot' || github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'dmoove')
     steps:
       - uses: hmarr/auto-approve-action@v2.2.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge pull request
+        uses: pascalgn/automerge-action@v0.16.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_LABELS: auto-approve
+          MERGE_METHOD: squash
+          MERGE_DELETE_BRANCH: true
