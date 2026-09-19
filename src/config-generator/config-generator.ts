@@ -11,81 +11,83 @@ import { CacheType, GitlabExecutor } from './enums';
 export const DEFAULT_VOLUMES: readonly string[] = [
   '/var/run/docker.sock:/var/run/docker.sock',
   '/cache:/cache',
-  '/home/gitlab-runner/.aws/credentials:/etc/.aws/credentials:rw',
 ];
 
 /**
- * Properties for the GlConfigGenerator class.
+ * Image used for jobs that do not specify one.
+ */
+export const DEFAULT_DOCKER_IMAGE = 'ubuntu:24.04';
+
+/**
+ * Properties for the GitLabConfig class.
  */
 export interface GlConfigGeneratorProps {
   /**
-   * How many jobs can run concurrently?
-   *
-   * @type {number}
+   * How many jobs can run concurrently on one runner instance.
    */
   readonly concurrent: number;
 
   /**
-   * The gitlab url.
-   *
-   * @type {string}
+   * The GitLab URL.
    */
   readonly gitlabUrl: string;
 }
 
-export interface ConfigDockerExecutor {
+/**
+ * Settings of the `[runners.docker]` section in `config.toml`.
+ */
+export interface DockerRunnerConfig {
   /**
-   * default image for docker executor
+   * Default image for jobs that do not set one.
    *
-   * @type {string}
-   * @default ubuntu:20.04
+   * @default DEFAULT_DOCKER_IMAGE
    */
-  readonly gitlabImage?: string;
+  readonly image?: string;
 
   /**
-   * default mode for containers
+   * Run job containers in privileged mode (needed for Docker-in-Docker).
    *
-   * @type {boolean}
    * @default false
    */
   readonly privileged?: boolean;
 
   /**
-   *  volumes for docker executor
+   * Volumes mounted into job containers.
    *
-   * @type {string[]}
-   * @default ["/var/run/docker.sock:/var/run/docker.sock", "/cache:/cache", "/home/gitlab-runner/.aws/credentials:/etc/.aws/credentials:rw"]
+   * @default DEFAULT_VOLUMES
    */
   readonly volumes?: string[];
 
   /**
-   * build cache for docker executor
+   * Disable the runner cache for the Docker executor.
    *
-   * @type {boolean}
    * @default false
    */
   readonly disableCache?: boolean;
 
   /**
-   * add custom environment variables
+   * Additional environment variables passed to every job.
    */
-  readonly env?: EnvVariables;
+  readonly env?: Record<string, string>;
 }
 
-type EnvVariables = Record<string, string>;
+/**
+ * @deprecated Use {@link DockerRunnerConfig}. `gitlabImage` became `image`.
+ */
+export type ConfigDockerExecutor = DockerRunnerConfig;
 
 export interface IGitLabConfig {
   /**
-   * Adds an executor to the configuration.
+   * Adds the Docker executor section to the configuration.
    *
    * @param props The properties for the executor.
    */
-  addDockerExecutor(props?: ConfigDockerExecutor): void;
+  addDockerExecutor(props?: DockerRunnerConfig): void;
 
   /**
-   * Adds a cache to the configuration.
-   * @param scope
-   * @param bucket
+   * Adds an S3 cache to the configuration.
+   * @param scope construct used to resolve the region
+   * @param bucket cache bucket
    */
   addCache(scope: Construct, bucket: GitLabCacheBucket): void;
 
@@ -96,19 +98,22 @@ export interface IGitLabConfig {
 }
 
 /**
- * Generates a gitlab config toml file
+ * Generates the `config.toml` of one runner instance.
+ *
+ * One instance runs exactly one runner process with one `[[runners]]`
+ * section, so the generator manages a single runner entry. The runner
+ * authentication token is left as the placeholder `{TOKEN}` and replaced by
+ * the bootstrap script after the runner has been created.
  */
 export class GitLabConfig implements IGitLabConfig {
   private readonly config: GlConfig;
-  private readonly url: string;
 
   constructor(props: GlConfigGeneratorProps) {
-    this.url = props.gitlabUrl;
     this.config = {
       concurrent: props.concurrent,
       runners: [
         {
-          url: this.url,
+          url: props.gitlabUrl,
           token: '{TOKEN}',
           executor: GitlabExecutor.DOCKER,
           environment: [],
@@ -118,42 +123,27 @@ export class GitLabConfig implements IGitLabConfig {
   }
 
   /**
-   * Add a Docker executor configuration to the generated config.
+   * Add the Docker executor configuration to the generated config.
+   *
+   * Calling it again replaces the previous Docker settings.
    *
    * @param props - optional docker specific settings
    */
-  public addDockerExecutor(props?: ConfigDockerExecutor) {
-    const runner = this.config.runners[0];
+  public addDockerExecutor(props?: DockerRunnerConfig) {
+    const runner = this.runner;
     runner.executor = GitlabExecutor.DOCKER;
     runner.docker = {
-      image: props?.gitlabImage ?? 'ubuntu:20.04',
+      image: props?.image ?? DEFAULT_DOCKER_IMAGE,
       privileged: props?.privileged ?? false,
       disable_cache: props?.disableCache ?? false,
-      volumes: (props?.volumes ?? DEFAULT_VOLUMES) as string[],
+      volumes: [...(props?.volumes ?? DEFAULT_VOLUMES)],
     };
 
-    if (props?.env) {
-      this.addEnvironments(props.env);
-    }
-
+    runner.environment = [];
     this.addEnvironments({
+      // Let the runner pull from ECR with the instance role.
       DOCKER_AUTH_CONFIG: '{ "credsStore": "ecr-login" }',
-    });
-  }
-
-  /**
-   * Merge additional environment variables into the runner configuration.
-   */
-  private addEnvironments(envVariables: Record<string, string>) {
-    const runner = this.config.runners[0];
-
-    if (!runner.environment) {
-      runner.environment = [];
-    }
-
-    const environmentArray = runner.environment;
-    Object.entries(envVariables).forEach(([key, value]) => {
-      environmentArray.push(`${key}=${value}`);
+      ...props?.env,
     });
   }
 
@@ -161,7 +151,7 @@ export class GitLabConfig implements IGitLabConfig {
    * Enable S3 caching for the runner using the provided bucket.
    */
   public addCache(scope: Construct, bucket: GitLabCacheBucket) {
-    this.config.runners[0].cache = {
+    this.runner.cache = {
       Type: CacheType.S3,
       Shared: true,
       s3: {
@@ -176,5 +166,21 @@ export class GitLabConfig implements IGitLabConfig {
    */
   public generateToml() {
     return toml.stringify(this.config);
+  }
+
+  private get runner() {
+    return this.config.runners[0];
+  }
+
+  /**
+   * Merge additional environment variables into the runner configuration.
+   */
+  private addEnvironments(envVariables: Record<string, string>) {
+    const runner = this.runner;
+    runner.environment ??= [];
+    const environment = runner.environment;
+    Object.entries(envVariables).forEach(([key, value]) => {
+      environment.push(`${key}=${value}`);
+    });
   }
 }

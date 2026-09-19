@@ -4,6 +4,8 @@ import {
   Signals,
   UpdatePolicy,
 } from 'aws-cdk-lib/aws-autoscaling';
+import { LaunchTemplate, UserData } from 'aws-cdk-lib/aws-ec2';
+import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { DrainStateMachine } from '../../drain-runner';
 import { GlCfnInit } from './cfn-init';
@@ -16,75 +18,77 @@ import {
 export type DockerExecutorAutoscalingProps = BaseDockerExecutorProps;
 
 /**
- * Represents an Auto Scaling Group for Docker Executor instances for GitLab CI/CD.
- * This class extends `AutoScalingGroup` to provide a scalable pool of instances
- * that automatically adjusts based on workload demands.
+ * AutoScaling group of Docker executor instances for GitLab CI/CD.
+ *
+ * Instances are launched from an explicit launch template (IMDSv2 required,
+ * root volume sized by `volumeSize`) and registered through CloudFormation
+ * Init. A {@link DrainStateMachine} pauses and unregisters runners before
+ * instances are terminated.
+ *
+ * The desired capacity is intentionally not managed: it is set by scaling
+ * policies or manually and would otherwise be reset on every deployment.
  *
  * Example:
  * ```
  * const asgExecutor = new DockerExecutorAutoscaling(this, 'DockerExecutor', {
  *   instanceType: new InstanceType('t3.medium'),
- *   machineImage: MachineImage.latestAmazonLinux(),
- *   autoscalingConfig: { minCapacity: 1, maxCapacity: 5, desiredCapacity: 2 },
- *   vpcConfig: { vpc: vpc },
- *   gitlabUrl: 'https://gitlab.example.com',
+ *   machineImage: MachineImage.latestAmazonLinux2023(),
+ *   autoscalingConfig: { minCapacity: 1, maxCapacity: 5 },
+ *   vpcConfig: { vpc },
+ *   gitlabUrl: 'https://gitlab.example.com/',
  *   tokenSecret: secret,
+ *   config,
  * });
  * ```
- *
- * @param scope - The scope in which to define this construct.
- * @param id - The ID of the construct.
- * @param props - The properties required to configure the auto scaling group.
  */
 export class DockerExecutorAutoscaling extends AutoScalingGroup {
-  private static validateAutoScalingConfig(
-    props: DockerExecutorAutoscalingProps,
-  ) {
-    if (
-      props.autoscalingConfig?.minCapacity &&
-      props.autoscalingConfig?.maxCapacity
-    ) {
-      if (
-        props.autoscalingConfig.minCapacity >
-        props.autoscalingConfig.maxCapacity
-      ) {
-        throw new Error('The minCapacity cannot be greater than maxCapacity.');
-      }
-    }
-  }
+  /** State machine that drains runners before termination. */
+  readonly drainStateMachine: DrainStateMachine;
 
   constructor(
     scope: Construct,
     id: string,
     props: DockerExecutorAutoscalingProps,
   ) {
-    super(scope, id, {
-      minCapacity: props.autoscalingConfig?.minCapacity ?? 1,
-      maxCapacity: props.autoscalingConfig?.maxCapacity ?? 5,
-      desiredCapacity: props.autoscalingConfig?.desiredCapacity ?? 2,
+    const minCapacity = props.autoscalingConfig?.minCapacity ?? 1;
+    const maxCapacity = props.autoscalingConfig?.maxCapacity ?? 5;
+
+    const launchTemplate = new LaunchTemplate(scope, `${id}LaunchTemplate`, {
       instanceType: props.instanceType,
       machineImage: props.machineImage,
-      signals: Signals.waitForAll({
-        timeout: Duration.minutes(10),
+      role: new Role(scope, `${id}InstanceRole`, {
+        assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
+        description: 'Instance role of the GitLab runner executor',
       }),
-      newInstancesProtectedFromScaleIn: false,
-      blockDevices: getAsg2BlockDevices(),
-      vpc: props.vpcConfig.vpc,
-      vpcSubnets: props.vpcConfig.vpcSubnets,
-      updatePolicy: UpdatePolicy.rollingUpdate({
-        minInstancesInService: 1,
-      }),
+      userData: UserData.forLinux(),
+      blockDevices: getAsg2BlockDevices(props.volumeSize),
       requireImdsv2: true,
     });
 
-    DockerExecutorAutoscaling.validateAutoScalingConfig(props);
-
-    this.applyCloudFormationInit(setupCfnInit(scope, props));
+    super(scope, id, {
+      launchTemplate,
+      minCapacity,
+      maxCapacity,
+      vpc: props.vpcConfig.vpc,
+      vpcSubnets: props.vpcConfig.vpcSubnets,
+      signals: Signals.waitForMinCapacity({
+        timeout: Duration.minutes(15),
+      }),
+      newInstancesProtectedFromScaleIn: false,
+      updatePolicy: UpdatePolicy.rollingUpdate({
+        minInstancesInService: Math.min(
+          minCapacity,
+          Math.max(maxCapacity - 1, 0),
+        ),
+      }),
+    });
 
     GlCfnInit.addAwsCfnBootstrap(this);
+    this.applyCloudFormationInit(setupCfnInit(scope, props));
 
-    new DrainStateMachine(this, 'DrainStateMachine', {
+    this.drainStateMachine = new DrainStateMachine(this, 'DrainStateMachine', {
       autoScalingGroup: this,
+      maxDrainDuration: props.maxDrainDuration,
       functionProps: {
         gitEndpoint: props.gitlabUrl,
         secret: props.tokenSecret,

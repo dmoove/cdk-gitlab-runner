@@ -11,7 +11,8 @@ export interface ExecutorProps {
    */
   readonly config: GitLabConfig;
   /**
-   * Optional tags applied to created resources.
+   * GitLab runner tags. Jobs select runners by these tags. The account id,
+   * region, `docker` and `runner` are always added.
    */
   readonly tags?: string[];
 }

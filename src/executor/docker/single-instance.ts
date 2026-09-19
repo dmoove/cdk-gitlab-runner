@@ -10,12 +10,11 @@ import {
 export type DockerExecutorInstanceProps = BaseDockerExecutorProps;
 
 /**
- * Represents a Docker Executor instance for GitLab CI/CD.
+ * Single EC2 instance running the GitLab Docker executor.
  *
- * This class extends EC2 Instance and sets up a machine to run
- * GitLab jobs using a specific machine image, instance type, and VPC configuration.
+ * The instance requires IMDSv2, sizes its root volume by `volumeSize` and
+ * is registered as a runner through CloudFormation Init.
  */
-
 export class DockerExecutorInstance extends Instance {
   constructor(
     scope: Construct,
@@ -25,22 +24,13 @@ export class DockerExecutorInstance extends Instance {
     super(scope, id, {
       instanceType: props.instanceType,
       machineImage: props.machineImage,
-      blockDevices: getEc2BlockDevices(props.volumeSize ?? 80),
+      blockDevices: getEc2BlockDevices(props.volumeSize),
       vpc: props.vpcConfig.vpc,
-      init: setupCfnInit(scope, props),
       vpcSubnets: props.vpcConfig.vpcSubnets,
+      init: setupCfnInit(scope, props),
+      requireImdsv2: true,
     });
 
-    this.addCfnBootstrap();
-  }
-
-  /**
-   * Adds AWS CloudFormation Bootstrap to the instance.
-   *
-   * This method ensures that the instance has all necessary packages
-   * and tools to work with GitLab CI/CD.
-   */
-  private addCfnBootstrap() {
     GlCfnInit.addAwsCfnBootstrap(this);
   }
 }

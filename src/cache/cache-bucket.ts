@@ -1,5 +1,5 @@
 import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
-import { Key } from 'aws-cdk-lib/aws-kms';
+import { IKey } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
@@ -12,11 +12,9 @@ export interface GitLabCacheBucketProps {
   readonly bucketNamePrefix?: string;
 
   /**
-   * bucket encryption?
-   *
-   * @default - key for the gitlab runner stack
+   * KMS key used to encrypt the cached objects.
    */
-  readonly encryptionKey: Key;
+  readonly encryptionKey: IKey;
 
   /**
    * How many days the objects should be cached
