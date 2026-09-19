@@ -24,7 +24,7 @@ describe('GitLabConfig Generator', () => {
     });
     config.addDockerExecutor({
       disableCache: false,
-      gitlabImage: 'gitlab/gitlab-ce:latest',
+      image: 'gitlab/gitlab-ce:latest',
       privileged: true,
     });
 
@@ -40,7 +40,7 @@ describe('GitLabConfig Generator', () => {
     });
     config.addDockerExecutor({
       disableCache: false,
-      gitlabImage: 'gitlab/gitlab-ce:latest',
+      image: 'gitlab/gitlab-ce:latest',
       privileged: true,
     });
 
@@ -61,7 +61,7 @@ describe('GitLabConfig Generator', () => {
     });
     config.addDockerExecutor({
       disableCache: false,
-      gitlabImage: 'gitlab/gitlab-ce:latest',
+      image: 'gitlab/gitlab-ce:latest',
       privileged: true,
       env: { TEST: 'test' },
     });
@@ -77,7 +77,7 @@ describe('GitLabConfig Generator', () => {
     });
     config.addDockerExecutor({
       disableCache: false,
-      gitlabImage: 'gitlab/gitlab-ce:latest',
+      image: 'gitlab/gitlab-ce:latest',
       privileged: true,
     });
 
@@ -95,7 +95,7 @@ describe('GitLabConfig Generator', () => {
     });
     config.addDockerExecutor({
       disableCache: false,
-      gitlabImage: 'gitlab/gitlab-ce:latest',
+      image: 'gitlab/gitlab-ce:latest',
       privileged: true,
     });
 

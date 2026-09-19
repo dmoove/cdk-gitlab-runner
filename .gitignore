@@ -3,7 +3,7 @@
 !/.github/workflows/auto-approve.yml
 !/package.json
 !/LICENSE
-!/.npmignore
+
 logs
 *.log
 npm-debug.log*
@@ -44,7 +44,7 @@ junit.xml
 !/src/
 /lib
 /dist/
-!/.eslintrc.json
+
 !/API.md
 samples
 /lambda

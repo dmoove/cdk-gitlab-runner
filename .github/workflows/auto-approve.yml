@@ -15,7 +15,7 @@ jobs:
       contents: write
     if: contains(github.event.pull_request.labels.*.name, 'auto-approve') && (github.event.pull_request.user.login == 'github-actions' || github.event.pull_request.user.login == 'github-actions[bot]' || github.event.pull_request.user.login == 'dependabot' || github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'dmoove')
     steps:
-      - uses: hmarr/auto-approve-action@v2.2.1
+      - uses: hmarr/auto-approve-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Merge pull request
