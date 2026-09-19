@@ -5,16 +5,15 @@ import {
   UpdatePolicy,
 } from 'aws-cdk-lib/aws-autoscaling';
 import { Construct } from 'constructs';
+import { DrainStateMachine } from '../../drain-runner';
 import { GlCfnInit } from './cfn-init';
 import {
   BaseDockerExecutorProps,
   getAsg2BlockDevices,
   setupCfnInit,
 } from './docker-executor';
-import { DrainStateMachine } from '../../drain-runner';
 
-export interface DockerExecutorAutoscalingProps
-  extends BaseDockerExecutorProps {}
+export type DockerExecutorAutoscalingProps = BaseDockerExecutorProps;
 
 /**
  * Represents an Auto Scaling Group for Docker Executor instances for GitLab CI/CD.

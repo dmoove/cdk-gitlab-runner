@@ -14,11 +14,11 @@ import {
 import { IRole, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
+import { ExecutorProps } from '../executor';
 import { DockerExecutorAutoscaling } from './autoscaling';
 import { GlCfnInit } from './cfn-init';
 import { DockerExecutorType } from './enums';
 import { DockerExecutorInstance } from './single-instance';
-import { ExecutorProps } from '../executor';
 
 export interface BaseDockerExecutorProps extends ExecutorProps {
   /**
@@ -165,7 +165,7 @@ export class DockerExecutor extends Construct implements IDockerExecutor {
         });
       default:
         throw new Error(
-          `Unsupported DockerExecutorType: ${props.dockerExecutorType}`,
+          `Unsupported DockerExecutorType: ${String(props.dockerExecutorType)}`,
         );
     }
   }

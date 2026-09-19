@@ -7,7 +7,7 @@ import {
   setupCfnInit,
 } from './docker-executor';
 
-export interface DockerExecutorInstanceProps extends BaseDockerExecutorProps {}
+export type DockerExecutorInstanceProps = BaseDockerExecutorProps;
 
 /**
  * Represents a Docker Executor instance for GitLab CI/CD.

@@ -1,130 +1,133 @@
-import { AutoScaling, EC2, SecretsManager } from 'aws-sdk';
-import { Runners } from 'gitlab';
-import { AutoScalingEvent, EditRunnerOptions, GitLabSecret, Job } from './type';
+import {
+  AutoScalingClient,
+  CompleteLifecycleActionCommand,
+  RecordLifecycleActionHeartbeatCommand,
+} from '@aws-sdk/client-auto-scaling';
+import { DescribeTagsCommand, EC2Client } from '@aws-sdk/client-ec2';
+import { GitLabClient } from '../../lambda-common/gitlab';
+import { getGitLabSecret } from '../../lambda-common/secret';
 
-const smClient = new SecretsManager();
-const ec2Client = new EC2();
-const asgClient = new AutoScaling();
+/** Tag written by the bootstrap script that links an instance to its runner. */
+export const RUNNER_ID_TAG = 'RunnerId';
 
-const secretArn = process.env.SECRET_ARN;
-const gitEndpoint = process.env.GIT_ENDPOINT;
+/**
+ * Relevant part of the `EC2 Instance-terminate Lifecycle Action` event.
+ */
+export interface LifecycleEventDetail {
+  readonly LifecycleActionToken?: string;
+  readonly AutoScalingGroupName: string;
+  readonly LifecycleHookName: string;
+  readonly EC2InstanceId: string;
+  readonly LifecycleTransition?: string;
+}
+
+/**
+ * Input of the drain Lambda as sent by the drain state machine.
+ */
+export interface DrainEvent {
+  /** Lifecycle event detail forwarded from EventBridge. */
+  readonly detail: LifecycleEventDetail;
+  /**
+   * `drain` pauses the runner and checks for running jobs (default).
+   * `abandon` gives up waiting and lets the instance terminate.
+   */
+  readonly action?: 'drain' | 'abandon';
+}
+
+export type DrainStatus = 'drained' | 'draining' | 'abandoned';
+
+export interface DrainResult {
+  readonly status: DrainStatus;
+  readonly runnerId?: number;
+  readonly runningJobs?: number;
+}
+
+const ec2 = new EC2Client({});
+const autoscaling = new AutoScalingClient({});
 
 /**
  * Entry point for the drain Lambda.
  *
- * The function pauses the runner associated with the EC2 instance and waits
- * until no jobs are running. It then signals the AutoScaling group to
- * continue the termination.
+ * On `drain` the runner belonging to the instance is paused so it does not
+ * pick up new jobs. When no job is running any more the runner is deleted
+ * from GitLab and the AutoScaling lifecycle action is completed, otherwise a
+ * heartbeat is recorded and `draining` is returned so the state machine can
+ * retry later. On `abandon` the lifecycle action is completed with
+ * `ABANDON`, which terminates the instance regardless of running jobs.
  */
-export async function handler(event: AutoScalingEvent) {
-  const instanceId = event.detail.EC2InstanceId;
-
+export async function handler(event: DrainEvent): Promise<DrainResult> {
+  const secretArn = process.env.SECRET_ARN;
+  const gitEndpoint = process.env.GIT_ENDPOINT;
   if (!secretArn || !gitEndpoint) {
-    throw new Error('Missing environment variables');
+    throw new Error('Missing environment variables SECRET_ARN or GIT_ENDPOINT');
   }
 
-  const runnerId = await getRunnerId(instanceId);
-  const asgParams = {
+  const lifecycle = {
     AutoScalingGroupName: event.detail.AutoScalingGroupName,
     LifecycleHookName: event.detail.LifecycleHookName,
-  };
-  const options: EditRunnerOptions = {
-    paused: true,
+    InstanceId: event.detail.EC2InstanceId,
   };
 
-  try {
-    const secret = await getSecretValue(secretArn);
-    const gitlabClient = new Runners({
-      host: gitEndpoint,
-      token: secret.PrivateToken,
-    });
-
-    await gitlabClient.edit(runnerId, options);
-
-    const jobs = (await gitlabClient.jobs(runnerId)) as Job[];
-    const openJobs = jobs.filter((job) => job.status === 'running');
-
-    if (openJobs.length === 0) {
-      await asgClient
-        .completeLifecycleAction({
-          ...asgParams,
-          LifecycleActionResult: 'CONTINUE',
-        })
-        .promise();
-
-      return {
-        statusCode: 200,
-        body: 'Success',
-      };
-    } else {
-      await asgClient.recordLifecycleActionHeartbeat(asgParams).promise();
-
-      return {
-        statusCode: 200,
-        body: 'Heartbeat',
-      };
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      throw new Error(`Handler failed: ${error.message}`);
-    } else {
-      console.error('An unknown error occurred', error);
-      throw new Error('Handler failed due to an unknown error');
-    }
+  if (event.action === 'abandon') {
+    await autoscaling.send(
+      new CompleteLifecycleActionCommand({
+        ...lifecycle,
+        LifecycleActionResult: 'ABANDON',
+      }),
+    );
+    return { status: 'abandoned' };
   }
+
+  const runnerId = await getRunnerId(event.detail.EC2InstanceId);
+  const secret = await getGitLabSecret(secretArn);
+  const gitlab = new GitLabClient({
+    endpoint: gitEndpoint,
+    token: secret.PrivateToken,
+  });
+
+  const exists = await gitlab.setRunnerPaused(runnerId, true);
+  const runningJobs = exists
+    ? await gitlab.listRunnerJobs(runnerId, 'running')
+    : [];
+
+  if (runningJobs.length > 0) {
+    await autoscaling.send(
+      new RecordLifecycleActionHeartbeatCommand(lifecycle),
+    );
+    return { status: 'draining', runnerId, runningJobs: runningJobs.length };
+  }
+
+  if (exists) {
+    await gitlab.deleteRunner(runnerId);
+  }
+  await autoscaling.send(
+    new CompleteLifecycleActionCommand({
+      ...lifecycle,
+      LifecycleActionResult: 'CONTINUE',
+    }),
+  );
+  return { status: 'drained', runnerId, runningJobs: 0 };
 }
 
 /**
- * Retrieve the GitLab runner ID stored as a tag on the EC2 instance.
+ * Reads the GitLab runner id from the `RunnerId` tag of the instance.
  */
 async function getRunnerId(instanceId: string): Promise<number> {
-  const params: EC2.DescribeTagsRequest = {
-    Filters: [
-      {
-        Name: 'resource-id',
-        Values: [instanceId],
-      },
-    ],
-  };
+  const response = await ec2.send(
+    new DescribeTagsCommand({
+      Filters: [
+        { Name: 'resource-id', Values: [instanceId] },
+        { Name: 'key', Values: [RUNNER_ID_TAG] },
+      ],
+    }),
+  );
 
-  const tags = await ec2Client.describeTags(params).promise();
-  let runnerId = 0;
-  tags.Tags?.forEach((tag) => {
-    if (tag.Key === 'RunnerId') {
-      runnerId = parseInt(tag.Value || '0', 10);
-    }
-  });
-  return runnerId;
-}
-
-/**
- * Fetch and parse the GitLab secret containing authentication tokens.
- */
-async function getSecretValue(secretName: string): Promise<GitLabSecret> {
-  try {
-    const data = await smClient
-      .getSecretValue({ SecretId: secretName })
-      .promise();
-    let secretString: string;
-    if ('SecretString' in data) {
-      secretString = data.SecretString!;
-    } else {
-      let buff = Buffer.from(data.SecretBinary as string, 'base64');
-      secretString = buff.toString('ascii');
-    }
-    const secret: GitLabSecret = JSON.parse(secretString);
-    return secret;
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error(err);
-      throw new Error(`Failed to retrieve secret: ${err.message}`);
-    } else {
-      console.error(
-        'An unknown error occurred while retrieving the secret',
-        err,
-      );
-      throw new Error('Failed to retrieve secret due to an unknown error');
-    }
+  const value = response.Tags?.find((tag) => tag.Key === RUNNER_ID_TAG)?.Value;
+  const runnerId = value ? Number.parseInt(value, 10) : Number.NaN;
+  if (!Number.isInteger(runnerId) || runnerId <= 0) {
+    throw new Error(
+      `Instance ${instanceId} has no valid ${RUNNER_ID_TAG} tag (value: ${value ?? 'missing'})`,
+    );
   }
+  return runnerId;
 }

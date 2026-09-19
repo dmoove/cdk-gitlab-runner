@@ -1,20 +1,14 @@
 import * as toml from '@iarna/toml';
 import { Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { CacheType, GitlabExecutor } from './enums';
 import { GitLabCacheBucket } from '../cache/cache-bucket';
 import { GlConfig } from '../types/runner-config';
-
-export type Volume =
-  | '/var/run/docker.sock:/var/run/docker.sock'
-  | '/cache:/cache'
-  | '/home/gitlab-runner/.aws/credentials:/etc/.aws/credentials:rw'
-  | string;
+import { CacheType, GitlabExecutor } from './enums';
 
 /**
- * Our default volumes
+ * Volumes mounted into every job container by default.
  */
-const DEFAULT_VOLUMES: readonly Volume[] = [
+export const DEFAULT_VOLUMES: readonly string[] = [
   '/var/run/docker.sock:/var/run/docker.sock',
   '/cache:/cache',
   '/home/gitlab-runner/.aws/credentials:/etc/.aws/credentials:rw',
@@ -62,7 +56,7 @@ export interface ConfigDockerExecutor {
    * @type {string[]}
    * @default ["/var/run/docker.sock:/var/run/docker.sock", "/cache:/cache", "/home/gitlab-runner/.aws/credentials:/etc/.aws/credentials:rw"]
    */
-  readonly volumes?: Volume[];
+  readonly volumes?: string[];
 
   /**
    * build cache for docker executor
