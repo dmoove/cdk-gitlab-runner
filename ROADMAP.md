@@ -18,6 +18,39 @@ Verification done for this review:
 - `npm view @dmoove/cdk-gitlab-runner` (only `0.0.0`, published 2025-06-08).
 - Open GitHub issues (one: #19) and open pull requests (six Dependabot PRs).
 
+## Status
+
+Updated 2026-09-19 on branch `claude/repo-feature-quality-review-02y09r`.
+Sections 1 and 2 below describe the state of `main` at the base commit and
+are kept for reference. All of them are resolved on this branch, with
+these exceptions and notes:
+
+- 1.4 / 3.1: the pending jobs metric works now (per project or group), but
+  no scaling policy is attached to the AutoScaling group yet. Issue #19
+  stays open; `PendingJobsMetric.metric` is ready to be used in a step
+  scaling policy.
+- 2.7: the runner is now deleted during drain and the wait is bounded by
+  `maxDrainDuration`. Unregistering all runners on `cdk destroy` is still
+  open.
+- 2.8: `sudo service`, the `testCmd` hack, unpinned `latest` rpm, missing
+  ECR helper and the secret ARN echo are fixed. Docker daemon hygiene (data
+  volume, log rotation, prune) from section 4 is still open.
+- Section 4 (features), 3.2 (Kubernetes enum), the remaining items of
+  section 6 (`tags` naming, `GlConfig.runners[0]` modelling) and section 8
+  (Dependabot PRs, Node matrix, changeset check) are untouched.
+
+Resolved in detail: packaging (1.1), Node 22 and SDK v3 (1.2), runner
+authentication tokens (1.3), metric handler and permission (1.4), image
+option (2.1), `VpcConfig` type (2.2), multiple executors (2.3),
+`cacheConfig.enabled` (2.4), cache grants (2.5), `volumeSize` (2.6), drain
+duplicates, pagination, bound and runner deletion (2.7), launch template,
+no fixed desired capacity, duplicate validation (2.9), tests through the
+public API and Lambda unit tests (5), shared Lambda code, `Volume` type,
+`IKey`, `tags` JSDoc, idempotent `addDockerExecutor`, dependency cleanup,
+ES2022, ESLint 10, `stability`, `.gitattributes` (6), README scope,
+compiling example, secret format, `API.md`, JSDoc example and defaults,
+typos (7), CI on `main`, `deploy-pages@v4`, first changeset (8).
+
 ## 1. Blockers: the library cannot be used as published
 
 These issues make the package unusable for a consumer today. They should be
