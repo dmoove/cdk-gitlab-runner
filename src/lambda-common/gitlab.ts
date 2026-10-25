@@ -19,6 +19,12 @@ export interface GitLabProject {
   readonly path_with_namespace?: string;
 }
 
+/** Response of `POST /user/runners`. */
+export interface CreatedRunner {
+  readonly id: number;
+  readonly token: string;
+}
+
 /** Job status values accepted by `GET /runners/:id/jobs`. */
 export type RunnerJobStatus = 'running' | 'success' | 'failed' | 'canceled';
 
@@ -65,6 +71,23 @@ export class GitLabClient {
     this.baseUrl = `${options.endpoint.replace(/\/+$/, '')}/api/v4`;
     this.token = options.token;
     this.perPage = options.perPage ?? 100;
+  }
+
+  /**
+   * Creates a runner linked to the token owner and returns its id and
+   * runner authentication token.
+   *
+   * @param body - request body of `POST /user/runners`
+   */
+  async createRunner(body: object): Promise<CreatedRunner> {
+    const response = (await this.request('POST', '/user/runners', body)) as
+      Partial<CreatedRunner> | undefined | null;
+    if (typeof response?.id !== 'number' || !response.token) {
+      throw new Error(
+        'GitLab POST /user/runners returned no runner id or token',
+      );
+    }
+    return { id: response.id, token: response.token };
   }
 
   /**

@@ -49,6 +49,32 @@ export interface RunnerRegistration {
 }
 
 /**
+ * Builds the tag list of a runner: the executor tags, the tags already on
+ * the registration and the defaults (account, region, `docker`, `runner`),
+ * trimmed and without duplicates.
+ *
+ * @param defaults - account id and region of the stack
+ * @param tags - GitLab runner tags of the executor
+ * @param registration - registration whose `tag_list` is merged
+ */
+export function buildRunnerTagList(
+  defaults: { readonly account: string; readonly region: string },
+  tags: string[] | undefined,
+  registration: RunnerRegistration,
+): string[] {
+  return [
+    ...(tags ?? []),
+    ...(registration.tag_list ?? []),
+    defaults.account,
+    defaults.region,
+    'docker',
+    'runner',
+  ]
+    .map((tag) => tag.trim())
+    .filter((tag, index, all) => tag.length > 0 && all.indexOf(tag) === index);
+}
+
+/**
  * Validates that the registration names the group or project it needs.
  */
 export function validateRunnerRegistration(

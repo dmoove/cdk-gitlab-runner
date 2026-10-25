@@ -16,6 +16,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const entries = {
   drain: 'src/drain-runner/lambda/drain.function.ts',
   'pending-jobs': 'src/pending-metric/lambda/pending-jobs.function.ts',
+  'runner-registration':
+    'src/runner-registration/lambda/runner-registration.function.ts',
 };
 
 await Promise.all(
