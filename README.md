@@ -1,8 +1,15 @@
 # @dmoove/cdk-gitlab-runner
 
-Deploy GitLab runners on AWS with the AWS CDK. The construct creates EC2
-based runners with the Docker executor, either as a single instance or as
-an AutoScaling group that drains runners gracefully before scaling in.
+Deploy GitLab runners on AWS with the AWS CDK. The construct supports two
+ways of running jobs in Docker, so `image:` and `services:` of a job work in
+both:
+
+- **Docker Autoscaler executor** (recommended for most setups). A small
+  runner manager runs as an ECS Fargate service and starts EC2 instances
+  for the jobs through GitLab's fleeting plugin for AWS. The instances
+  scale to zero when nothing is running. No EKS cluster is needed.
+- **Docker executor** on EC2, either as a single instance or as an
+  AutoScaling group that drains runners gracefully before scaling in.
 
 ## Prerequisites
 
@@ -89,7 +96,83 @@ runner.addDockerExecutor(DockerExecutorType.AUTOSCALING, {
 });
 ```
 
-## How it works
+## Docker Autoscaler executor on ECS Fargate
+
+```typescript
+import { Duration } from 'aws-cdk-lib';
+import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
+
+runner.addDockerAutoscalerExecutor({
+  id: 'Autoscaler',
+  vpcConfig: { vpc },
+  instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.LARGE),
+  maxInstances: 5,
+  tags: ['autoscaler'],
+  configProp: { image: 'alpine:3', privileged: true },
+  // Optional: one warm instance during office hours, none at night.
+  idlePolicies: [
+    {
+      idleCount: 1,
+      idleTime: Duration.minutes(30),
+      periods: ['* 7-19 * * mon-fri'],
+      timezone: 'Europe/Zurich',
+    },
+  ],
+});
+```
+
+```text
+GitLab ◄── job polling ── runner manager (ECS Fargate, 0.25 vCPU / 0.5 GB, 1 task)
+                              │  fleeting plugin (AWS API)     │ SSH (EC2 Instance Connect)
+                              ▼                                ▼
+                 AutoScaling group (0..maxInstances) ── EC2 instances with Docker
+                                                         └─ job container + services
+```
+
+- **Why not Fargate for the jobs?** Fargate has no Docker daemon and no
+  privileged containers. GitLab's Fargate driver runs every job in one
+  fixed task definition and ignores `image:` and `services:`. Here only
+  the runner manager runs on Fargate; the jobs run with the regular Docker
+  executor on EC2, so every Docker executor feature works, including
+  `services:` and Docker-in-Docker with `privileged: true`.
+- **Runner manager.** One Fargate task runs the official
+  `gitlab/gitlab-runner:alpine-v<runnerVersion>` image. At start it writes
+  `config.toml`, installs the plugin with `gitlab-runner fleeting install`
+  (default `aws:1`) and runs the runner. Deployments stop the old task
+  before the new one starts, so only one manager drives the AutoScaling
+  group at a time. ECS's SIGTERM is rewritten to SIGQUIT, so running jobs
+  get up to 120 seconds to finish.
+- **Runner registration.** A custom resource creates one runner through
+  `POST /api/v4/user/runners` and stores its token in a dedicated secret
+  that is injected into the task. Changing the registration creates a new
+  runner and deletes the old one; `cdk destroy` deletes the runner from
+  GitLab.
+- **Job instances.** The AutoScaling group is owned by the runner: minimum
+  and desired capacity 0, no scaling policies, scale-in protection and a
+  suspended `AZRebalance` process, as the plugin requires. Docker is
+  installed through the user data on Amazon Linux 2023 (arm64 or x86_64,
+  matching `instanceType`). The manager connects over SSH with keys pushed
+  through EC2 Instance Connect; the instance security group only allows SSH
+  from the manager. By default every job gets a fresh instance
+  (`capacityPerInstance: 1`, `maxUseCount: 1`). Instances need IMDSv2 and
+  job containers cannot read the instance credentials.
+- **Spot.** `spot: true` and `additionalInstanceTypes` launch the instances
+  as spot instances with the price-capacity-optimized strategy. A spot
+  interruption fails the jobs on that instance.
+- **Network.** The manager and the instances need outbound internet access
+  to reach GitLab, Docker Hub and `registry.gitlab.com` (plugin download).
+  Use private subnets with a NAT gateway, or public subnets with
+  `assignPublicIp: true` for the manager (instances get a public IP from
+  the subnet setting). The registration Lambda calls the GitLab API from
+  outside the VPC, so GitLab must be reachable from the internet.
+- **Costs.** The always-on part is the Fargate task (roughly 8 to 10 USD
+  per month on arm64 in `eu-central-1`) and its CloudWatch logs. EC2
+  instances only run while jobs run, plus the idle time of
+  `idlePolicies`. A job waits for an instance to boot (typically one to
+  two minutes) unless an idle instance is available; an AMI with Docker
+  preinstalled (`machineImage`) shortens that.
+
+## How it works (Docker executor)
 
 - **Bootstrap.** CloudFormation Init installs Docker, the ECR credential
   helper and a pinned GitLab runner version on Amazon Linux 2023 (x86_64 or

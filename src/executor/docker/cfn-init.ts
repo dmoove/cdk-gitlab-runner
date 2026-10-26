@@ -16,6 +16,7 @@ import { GitLabConfig } from '../../config-generator/config-generator';
 import {
   DEFAULT_RUNNER_VERSION,
   RunnerRegistration,
+  buildRunnerTagList,
 } from '../../config-generator/registration';
 
 /**
@@ -79,18 +80,7 @@ export class GlCfnInit {
     const stack = Stack.of(scope);
     const runnerVersion = props.runnerVersion ?? DEFAULT_RUNNER_VERSION;
 
-    const tags = [
-      ...(props.tags ?? []),
-      ...(props.registration.tag_list ?? []),
-      stack.account,
-      stack.region,
-      'docker',
-      'runner',
-    ]
-      .map((tag) => tag.trim())
-      .filter(
-        (tag, index, all) => tag.length > 0 && all.indexOf(tag) === index,
-      );
+    const tags = buildRunnerTagList(stack, props.tags, props.registration);
 
     const registration: RunnerRegistration = {
       ...props.registration,

@@ -14,7 +14,13 @@ import {
   RunnerRegistration,
   RunnerType,
 } from '../config-generator/registration';
-import { AutoScalingConfig, DockerExecutor, VpcConfig } from '../executor';
+import {
+  AutoScalingConfig,
+  DockerAutoscalerExecutor,
+  DockerAutoscalerExecutorAttributes,
+  DockerExecutor,
+  VpcConfig,
+} from '../executor';
 import { DockerExecutorType } from '../executor/docker/enums';
 
 export interface GitLabRunnerProps {
@@ -60,8 +66,11 @@ export interface CacheConfig {
 export interface RunnerConfig {
   /**
    * Maximum number of jobs one runner instance executes at the same time.
+   * For the Docker Autoscaler executor the limit applies to the runner
+   * manager, that is to all instances together.
    *
-   * @default 2
+   * @default - 2, for the Docker Autoscaler executor
+   * maxInstances * capacityPerInstance
    */
   readonly concurrent?: number;
   /**
@@ -122,7 +131,8 @@ export interface RunnerConfig {
    */
   readonly description?: string;
   /**
-   * GitLab runner version installed on the instances.
+   * GitLab runner version installed on the instances and used for the
+   * runner manager image of the Docker Autoscaler executor.
    *
    * @default DEFAULT_RUNNER_VERSION
    */
@@ -202,6 +212,11 @@ export interface IGitLabRunner {
   readonly executors: DockerExecutor[];
 
   /**
+   * The Docker Autoscaler executors added so far.
+   */
+  readonly autoscalerExecutors: DockerAutoscalerExecutor[];
+
+  /**
    * Adds a Docker executor to the GitLab Runner.
    *
    * @param executorType - the type of Docker executor.
@@ -219,6 +234,24 @@ export interface IGitLabRunner {
     executorType: DockerExecutorType,
     props: DockerExecutorAttributes,
   ): DockerExecutor;
+
+  /**
+   * Adds a Docker Autoscaler executor: a runner manager on ECS Fargate that
+   * scales EC2 instances for the jobs.
+   *
+   * @param props - properties for the executor.
+   * @returns the created executor.
+   * @example
+   * runner.addDockerAutoscalerExecutor({
+   *   instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.LARGE),
+   *   vpcConfig: { vpc },
+   *   maxInstances: 5,
+   *   configProp: { image: 'alpine:3' },
+   * });
+   */
+  addDockerAutoscalerExecutor(
+    props: DockerAutoscalerExecutorAttributes,
+  ): DockerAutoscalerExecutor;
 }
 
 /**
@@ -234,6 +267,7 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
   readonly gitlabUrl: string;
   readonly cacheBucket?: GitLabCacheBucket;
   readonly executors: DockerExecutor[] = [];
+  readonly autoscalerExecutors: DockerAutoscalerExecutor[] = [];
   private readonly runnerConfig: RunnerConfig;
 
   /**
@@ -277,11 +311,7 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
     props: DockerExecutorAttributes,
   ): DockerExecutor {
     const id = props.id ?? 'DockerExecutor';
-    if (this.node.tryFindChild(id)) {
-      throw new Error(
-        `GitLabRunner already has an executor with id "${id}". Set a unique "id" per executor.`,
-      );
-    }
+    this.assertUniqueExecutorId(id);
 
     const config = new GitLabConfig({
       concurrent: this.runnerConfig.concurrent ?? 2,
@@ -311,6 +341,44 @@ export class GitLabRunner extends Construct implements IGitLabRunner {
 
     this.executors.push(executor);
     return executor;
+  }
+
+  /**
+   * Adds a Docker Autoscaler executor to the GitLab Runner.
+   *
+   * The runner manager runs as an ECS Fargate service and scales an EC2
+   * AutoScaling group through the AWS fleeting plugin. Jobs run with Docker
+   * on the instances, so `image:` and `services:` work.
+   *
+   * @param props - executor properties
+   * @returns the created executor
+   */
+  addDockerAutoscalerExecutor(
+    props: DockerAutoscalerExecutorAttributes,
+  ): DockerAutoscalerExecutor {
+    const id = props.id ?? 'DockerAutoscalerExecutor';
+    this.assertUniqueExecutorId(id);
+
+    const executor = new DockerAutoscalerExecutor(this, id, {
+      ...props,
+      tokenSecret: this.tokenSecret,
+      gitlabUrl: this.gitlabUrl,
+      registration: this.createRegistration(id),
+      runnerVersion: this.runnerConfig.runnerVersion ?? DEFAULT_RUNNER_VERSION,
+      concurrent: this.runnerConfig.concurrent,
+      cacheBucket: this.cacheBucket,
+    });
+
+    this.autoscalerExecutors.push(executor);
+    return executor;
+  }
+
+  private assertUniqueExecutorId(id: string) {
+    if (this.node.tryFindChild(id)) {
+      throw new Error(
+        `GitLabRunner already has an executor with id "${id}". Set a unique "id" per executor.`,
+      );
+    }
   }
 
   /**

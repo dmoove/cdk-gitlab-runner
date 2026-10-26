@@ -39,6 +39,12 @@ these exceptions and notes:
   section 6 (`tags` naming, `GlConfig.runners[0]` modelling) and section 8
   (Dependabot PRs, Node matrix, changeset check) are untouched.
 
+Update 2026-10-25: the `docker-autoscaler` alternative of 3.1 is
+implemented as `GitLabRunner.addDockerAutoscalerExecutor()`, with the
+runner manager on ECS Fargate. It scales on GitLab's job queue, so it does
+not need the pending jobs metric. The EC2 Docker executor and issue #19
+stay as they are.
+
 Resolved in detail: packaging (1.1), Node 22 and SDK v3 (1.2), runner
 authentication tokens (1.3), metric handler and permission (1.4), image
 option (2.1), `VpcConfig` type (2.2), multiple executors (2.3),

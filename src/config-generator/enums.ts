@@ -1,5 +1,6 @@
 export enum GitlabExecutor {
   DOCKER = 'docker',
+  DOCKER_AUTOSCALER = 'docker-autoscaler',
   KUBERNETES = 'kubernetes',
 }
 
